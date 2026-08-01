@@ -72,11 +72,27 @@ body {
     min-width: 0;
 }
 
+/* Kill UA heading chrome; visual look comes only from these classes. */
+h1.brand,
+h2.panel-title {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+}
+
 .brand {
     font-weight: 700;
     font-size: 1.15rem;
     letter-spacing: -0.02em;
     color: var(--accent);
+}
+
+.panel-title {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    color: inherit;
 }
 
 .storage-note {

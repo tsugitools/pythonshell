@@ -15,7 +15,7 @@
   <div id="app">
     <header class="topbar">
       <div class="brand-block">
-        <div class="brand">PythonShell - A Python Playground</div>
+        <h1 class="brand">PythonShell - A Python Playground</h1>
         <div class="storage-note">Experiment freely. Work is saved only in this browser (localStorage).</div>
       </div>
       <div class="toolbar">
@@ -29,7 +29,7 @@
     <div class="main">
       <aside class="files-panel" aria-label="Files">
         <div class="panel-head">
-          <span>Files</span>
+          <h2 class="panel-title">Files</h2>
           <div class="file-actions">
             <button type="button" id="btn-new-file" title="New file" aria-label="New file">
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -54,6 +54,7 @@
       </aside>
 
       <section class="editor-panel" aria-label="Editor">
+        <h2 class="sr-only">Editor</h2>
         <div id="tabs" class="tabs" role="tablist" aria-label="Open files"></div>
         <div id="editor-wrap" class="editor-wrap">
           <label class="sr-only" for="source-fallback">Code editor</label>
@@ -63,7 +64,9 @@
 
       <div class="bottom-row">
         <section class="shell-panel" aria-label="Linux-like shell">
-          <div class="panel-head">Linux-like shell</div>
+          <div class="panel-head">
+            <h2 class="panel-title">Linux-like shell</h2>
+          </div>
           <div id="shell-output" class="shell-output" aria-live="polite"></div>
           <div class="shell-input-row">
             <span class="shell-prompt" aria-hidden="true">$</span>
