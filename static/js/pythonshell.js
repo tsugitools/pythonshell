@@ -17,14 +17,109 @@
     var historyIndex = 0;
     var historyDraft = '';
     var HISTORY_MAX = 200;
+    var a11yPreview = false;
+    var a11ySpeak = true;
+    var a11yPreviewLog = null;
 
     function $(sel) {
         return document.querySelector(sel);
     }
 
+    function isA11yPreviewEnabled() {
+        try {
+            var params = new URLSearchParams(window.location.search);
+            var v = params.get('a11y');
+            return v === '1' || v === 'true';
+        } catch (e) {
+            return /(?:^\?|&)a11y=(?:1|true)(?:&|$)/i.test(window.location.search || '');
+        }
+    }
+
+    function speakAnnouncement(text) {
+        if (!a11yPreview || !a11ySpeak || !text) return;
+        if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance === 'undefined') {
+            return;
+        }
+        try {
+            window.speechSynthesis.cancel();
+            var utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 1.05;
+            window.speechSynthesis.speak(utter);
+        } catch (e) {
+            /* speech optional */
+        }
+    }
+
+    function previewAnnouncement(text, assertive) {
+        if (!a11yPreview || !text) return;
+        if (a11yPreviewLog) {
+            var row = document.createElement('div');
+            row.className = 'a11y-preview-row' + (assertive ? ' is-assertive' : '');
+            var stamp = new Date().toLocaleTimeString();
+            row.textContent = stamp + ' · ' + (assertive ? 'alert' : 'status') + ' · ' + text;
+            a11yPreviewLog.insertBefore(row, a11yPreviewLog.firstChild);
+            while (a11yPreviewLog.children.length > 40) {
+                a11yPreviewLog.removeChild(a11yPreviewLog.lastChild);
+            }
+        }
+        speakAnnouncement(text);
+    }
+
+    function initA11yPreview() {
+        a11yPreview = isA11yPreviewEnabled();
+        if (!a11yPreview) return;
+
+        document.documentElement.classList.add('a11y-preview');
+        var panel = document.createElement('aside');
+        panel.id = 'a11y-preview';
+        panel.setAttribute('aria-hidden', 'true');
+        panel.innerHTML =
+            '<div class="a11y-preview-head">' +
+            '<strong>A11y preview</strong>' +
+            '<span class="a11y-preview-actions">' +
+            '<button type="button" id="a11y-preview-mute" title="Toggle speech">Mute</button>' +
+            '<button type="button" id="a11y-preview-clear" title="Clear log">Clear</button>' +
+            '</span>' +
+            '</div>' +
+            '<div class="a11y-preview-log" id="a11y-preview-log"></div>' +
+            '<div class="a11y-preview-hint">?a11y=1 — browser speech + log (no screen reader needed)</div>';
+        document.body.appendChild(panel);
+        a11yPreviewLog = $('#a11y-preview-log');
+
+        var muteBtn = $('#a11y-preview-mute');
+        if (muteBtn) {
+            muteBtn.addEventListener('click', function () {
+                a11ySpeak = !a11ySpeak;
+                muteBtn.textContent = a11ySpeak ? 'Mute' : 'Unmute';
+                if (!a11ySpeak && window.speechSynthesis) {
+                    try { window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+                }
+            });
+        }
+        var clearBtn = $('#a11y-preview-clear');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function () {
+                if (a11yPreviewLog) a11yPreviewLog.innerHTML = '';
+            });
+        }
+
+        // Chromium often blocks speech until a user gesture.
+        var unlock = function () {
+            if (!window.speechSynthesis) return;
+            try {
+                window.speechSynthesis.resume();
+            } catch (e) { /* ignore */ }
+            document.removeEventListener('click', unlock, true);
+            document.removeEventListener('keydown', unlock, true);
+        };
+        document.addEventListener('click', unlock, true);
+        document.addEventListener('keydown', unlock, true);
+    }
+
     function announce(msg, opts) {
         opts = opts || {};
-        var el = $(opts.assertive ? '#a11y-alert' : '#a11y-status');
+        var assertive = !!opts.assertive;
+        var el = $(assertive ? '#a11y-alert' : '#a11y-status');
         if (!el) return;
         var text = msg == null ? '' : String(msg);
         // Clear first so identical consecutive messages are still spoken.
@@ -32,6 +127,7 @@
         if (!text) return;
         window.setTimeout(function () {
             el.textContent = text;
+            previewAnnouncement(text, assertive);
         }, 30);
     }
 
@@ -794,6 +890,8 @@
     }
 
     function boot() {
+        initA11yPreview();
+
         workspace = window.PythonShellWorkspace.create({
             storageKey: cfg.storageKey || 'pythonshell-workspace-v1',
             maxFiles: cfg.maxFiles || 40,
