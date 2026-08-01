@@ -1,0 +1,30 @@
+---
+description: Bump worker cache-bust v=N in index.html after worker edits
+globs: worker/**
+alwaysApply: false
+---
+
+# Worker cache bust
+
+`index.html` pins the Pyodide worker with a simple integer query param (easy to read in View Source):
+
+```js
+workerUrl: 'worker/pyodide-worker.js?v=3'
+```
+
+Do **not** compute hashes on page load. Just bump the integer when the worker changes.
+
+## When you change the worker
+
+After creating, editing, or deleting anything under `worker/` (especially `pyodide-worker.js`):
+
+1. Run from the `pythonshell` tool root:
+
+```bash
+./scripts/bump-worker-cache.sh
+```
+
+2. Confirm `index.html` `workerUrl` now has a higher `?v=N`.
+3. Include the `index.html` change with the worker change.
+
+If you only touch `worker/result.py`, still bump: browsers cache the worker script; a new worker URL forces a reload that will re-fetch `result.py`.
