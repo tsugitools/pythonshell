@@ -1,0 +1,24 @@
+PythonShell
+===========
+
+An in-browser Python playground. Edit files on the left, run them with
+Run or:  python main.py
+
+Linux-like shell commands (type help for the list):
+  ls          list files
+  python      run a .py file
+  upload      add a file from your computer
+  download    save a file to your computer
+  rm          delete a file
+  clear       clear the shell
+
+Your work is saved only in this browser (localStorage).
+Reset workspace restores these starter files.
+
+For more permanent storage, you can upload and download files
+from this editor to your personal computer.
+
+Sample data files: romeo.txt, mbox-short.txt
+
+For more materials, auto graders, and more courses, please see
+https://www.py4e.com and https://www.masterprogrammer.com.

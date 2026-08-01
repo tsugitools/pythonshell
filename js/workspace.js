@@ -13,6 +13,7 @@
         "name = input('What is your name? ')\n" +
         "print('Hello', name)\n";
     var DEFAULT_SEED_FILES = [
+        { name: 'about.txt', url: 'files/about.txt' },
         { name: 'romeo.txt', url: 'files/romeo.txt' },
         { name: 'mbox-short.txt', url: 'files/mbox-short.txt' }
     ];

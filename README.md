@@ -1,6 +1,6 @@
 # PythonShell
 
-Standalone in-browser Python playground: multi-file editor, tiny simulated shell, Pyodide in a Web Worker.
+Standalone in-browser Python playground: multi-file editor, tiny Linux-like shell, Pyodide in a Web Worker.
 
 No LTI launch. No grading. Work is saved only in **localStorage** in this browser.
 
@@ -48,7 +48,7 @@ Pipes, redirects, globs, and a Python REPL are not supported.
 
 - Workspace key: `pythonshell-workspace-v1` (see `window.PYTHONSHELL.storageKey`).
 - Clearing site data, using another browser, or private mode can lose work.
-- **Reset workspace** clears localStorage for this tool and restores defaults: `main.py`, `romeo.txt`, and `mbox-short.txt` (from `files/`).
+- **Reset workspace** clears localStorage for this tool and restores defaults: `main.py`, `about.txt`, `romeo.txt`, and `mbox-short.txt` (from `files/`).
 
 ## Runtime
 

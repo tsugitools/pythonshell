@@ -30,7 +30,7 @@
 
         function helpText() {
             return [
-                'Supported commands:',
+                'Linux-like shell — supported commands:',
                 '  help              Show this help',
                 '  ls [file]         List workspace files',
                 '  rm <file...>      Delete file(s)',

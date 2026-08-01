@@ -65,12 +65,28 @@
         }
     }
 
+    function isPythonFile(name) {
+        return /\.py$/i.test(name || '');
+    }
+
+    function updateRunButtonVisibility() {
+        var runBtn = $('#btn-run');
+        if (!runBtn || !workspace) return;
+        var active = workspace.getState().activeFile;
+        var show = isPythonFile(active);
+        runBtn.hidden = !show;
+        if (!show) {
+            runBtn.disabled = true;
+        } else {
+            runBtn.disabled = busy || !(runtime && runtime.isReady());
+        }
+    }
+
     function setBusy(isBusy) {
         busy = !!isBusy;
-        var runBtn = $('#btn-run');
         var restartBtn = $('#btn-restart');
         var shellInput = $('#shell-input');
-        if (runBtn) runBtn.disabled = busy || !(runtime && runtime.isReady());
+        updateRunButtonVisibility();
         // Restart stays available so a stuck input()/run can be killed.
         if (restartBtn) restartBtn.disabled = !runtime;
         if (shellInput) shellInput.disabled = busy && !awaitingInput;
@@ -215,13 +231,14 @@
         if (editor) {
             editor.setValue(content, -1);
             editor.session.setMode(
-                /\.py$/i.test(st.activeFile) ? 'ace/mode/python' : 'ace/mode/text'
+                isPythonFile(st.activeFile) ? 'ace/mode/python' : 'ace/mode/text'
             );
             editor.clearSelection();
         }
         var ta = $('#source-fallback');
         if (ta) ta.value = content;
         ignoreAceChange = false;
+        updateRunButtonVisibility();
     }
 
     function renderFiles() {
@@ -509,6 +526,7 @@
 
     function onRunClick() {
         var st = workspace.getState();
+        if (!isPythonFile(st.activeFile)) return;
         var cmd = 'python ' + st.activeFile;
         appendShell('$ ' + cmd, 'line-cmd');
         pushShellHistory(cmd);
@@ -594,6 +612,9 @@
         });
         $('#btn-reset').addEventListener('click', function () {
             if (!window.confirm('Reset workspace? This clears localStorage for PythonShell.')) {
+                return;
+            }
+            if (!window.confirm('Are you sure? All files in this workspace will be replaced with the defaults.')) {
                 return;
             }
             exitInputMode();
