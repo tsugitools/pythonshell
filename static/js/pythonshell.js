@@ -593,19 +593,58 @@
             showLineNumbers: true,
             highlightActiveLine: true,
             behavioursEnabled: true,
-            wrap: false
+            wrap: false,
+            // Lets Escape leave the editor; Tab is no longer a permanent trap.
+            enableKeyboardAccessibility: true
         });
         editor.session.on('change', function () {
             if (ignoreAceChange) return;
             var st = workspace.getState();
             workspace.setFileContent(st.activeFile, editor.getValue());
         });
+        // Escape: leave Ace and land on the shell (Tab alone can't escape Ace).
+        editor.commands.addCommand({
+            name: 'leaveEditorToShell',
+            bindKey: { win: 'Esc', mac: 'Esc' },
+            readOnly: true,
+            exec: function (ed) {
+                try { ed.blur(); } catch (e) { /* ignore */ }
+                var shellInput = $('#shell-input');
+                if (shellInput) {
+                    shellInput.focus();
+                    announce('Left code editor. Shell command');
+                } else {
+                    announce('Left code editor');
+                }
+            }
+        });
         try {
             var aceInput = editor.textInput && editor.textInput.getElement
                 ? editor.textInput.getElement()
                 : null;
-            if (aceInput) aceInput.setAttribute('aria-label', 'Code editor');
+            if (aceInput) {
+                aceInput.setAttribute('aria-label', 'Code editor');
+                aceInput.setAttribute('aria-describedby', 'editor-a11y-hint');
+            }
+            if (editor.renderer && editor.renderer.scroller) {
+                editor.renderer.scroller.setAttribute(
+                    'aria-label',
+                    'Code editor. Press Enter to edit'
+                );
+                editor.renderer.scroller.setAttribute(
+                    'aria-describedby',
+                    'editor-a11y-hint'
+                );
+            }
         } catch (e) { /* ignore */ }
+        // First focus each visit: speak the Escape hint (aria-describedby alone
+        // is easy to miss inside Ace's custom focus model).
+        var editorHintSpoken = false;
+        editor.on('focus', function () {
+            if (editorHintSpoken) return;
+            editorHintSpoken = true;
+            announce('Code editor. Press Escape to leave');
+        });
         editor.resize();
     }
 

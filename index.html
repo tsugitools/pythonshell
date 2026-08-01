@@ -60,7 +60,14 @@
         <div id="tabs" class="tabs" role="tablist" aria-label="Open files"></div>
         <div id="editor-wrap" class="editor-wrap">
           <label class="sr-only" for="source-fallback">Code editor</label>
-          <textarea id="source-fallback" spellcheck="false"></textarea>
+          <p id="editor-a11y-hint" class="sr-only">
+            Press Escape to leave the code editor and move to the shell.
+          </p>
+          <textarea
+            id="source-fallback"
+            spellcheck="false"
+            aria-describedby="editor-a11y-hint"
+          ></textarea>
         </div>
       </section>
 
