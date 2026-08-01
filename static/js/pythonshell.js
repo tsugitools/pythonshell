@@ -20,6 +20,10 @@
     var a11yPreview = false;
     var a11ySpeak = true;
     var a11yPreviewLog = null;
+    var announceQueue = [];
+    var announceTimer = null;
+    var outFirstSpoken = false;
+    var outExtraLines = 0;
 
     function $(sel) {
         return document.querySelector(sel);
@@ -35,13 +39,15 @@
         }
     }
 
-    function speakAnnouncement(text) {
+    function speakAnnouncement(text, assertive) {
         if (!a11yPreview || !a11ySpeak || !text) return;
         if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance === 'undefined') {
             return;
         }
         try {
-            window.speechSynthesis.cancel();
+            // Assertive cuts the queue; polite messages append so first-line +
+            // "N more lines" + "Finished" can all be heard in ?a11y=1 mode.
+            if (assertive) window.speechSynthesis.cancel();
             var utter = new SpeechSynthesisUtterance(text);
             utter.rate = 1.05;
             window.speechSynthesis.speak(utter);
@@ -62,7 +68,7 @@
                 a11yPreviewLog.removeChild(a11yPreviewLog.lastChild);
             }
         }
-        speakAnnouncement(text);
+        speakAnnouncement(text, assertive);
     }
 
     function initA11yPreview() {
@@ -116,19 +122,96 @@
         document.addEventListener('keydown', unlock, true);
     }
 
-    function announce(msg, opts) {
-        opts = opts || {};
-        var assertive = !!opts.assertive;
+    function deliverAnnouncement(text, assertive) {
         var el = $(assertive ? '#a11y-alert' : '#a11y-status');
         if (!el) return;
-        var text = msg == null ? '' : String(msg);
         // Clear first so identical consecutive messages are still spoken.
         el.textContent = '';
-        if (!text) return;
         window.setTimeout(function () {
             el.textContent = text;
             previewAnnouncement(text, assertive);
-        }, 30);
+        }, 20);
+    }
+
+    function pumpAnnounceQueue() {
+        if (announceTimer || !announceQueue.length) return;
+        var item = announceQueue.shift();
+        deliverAnnouncement(item.text, item.assertive);
+        // Leave time for polite live regions / TTS before the next line.
+        var gap = item.assertive ? 120 : 550;
+        announceTimer = window.setTimeout(function () {
+            announceTimer = null;
+            pumpAnnounceQueue();
+        }, gap);
+    }
+
+    function announce(msg, opts) {
+        opts = opts || {};
+        var assertive = !!opts.assertive;
+        var text = msg == null ? '' : String(msg);
+        if (!text) return;
+        if (assertive) {
+            // Errors jump ahead of pending status chatter.
+            announceQueue = announceQueue.filter(function (item) {
+                return item.assertive;
+            });
+        }
+        announceQueue.push({ text: text, assertive: assertive });
+        pumpAnnounceQueue();
+    }
+
+    function splitOutputLines(text) {
+        if (text == null || text === '') return [];
+        var lines = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+        if (lines.length && lines[lines.length - 1] === '') lines.pop();
+        return lines;
+    }
+
+    function clipAnnounceLine(line) {
+        line = line == null ? '' : String(line);
+        if (line.length <= 220) return line;
+        return line.slice(0, 217) + '…';
+    }
+
+    function resetOutputAnnounce() {
+        outFirstSpoken = false;
+        outExtraLines = 0;
+    }
+
+    function flushOutputAnnounceExtras() {
+        if (outExtraLines <= 0) return;
+        var n = outExtraLines;
+        outExtraLines = 0;
+        announce(n === 1 ? '1 more line of output' : n + ' more lines of output');
+    }
+
+    /** Speak first print line; tally the rest for a later "N more lines" summary. */
+    function ingestStdoutForAnnounce(text) {
+        var lines = splitOutputLines(text);
+        if (!lines.length) return;
+        var start = 0;
+        if (!outFirstSpoken) {
+            announce(clipAnnounceLine(lines[0]));
+            outFirstSpoken = true;
+            start = 1;
+        }
+        outExtraLines += lines.length - start;
+    }
+
+    /** One-shot summary for non-run shell output (help, ls, …). */
+    function announceOutputBlock(text) {
+        var lines = splitOutputLines(text);
+        if (!lines.length) return;
+        if (lines.length === 1) {
+            announce(clipAnnounceLine(lines[0]));
+            return;
+        }
+        announce(
+            clipAnnounceLine(lines[0]) +
+                '. ' +
+                (lines.length - 1) +
+                ' more lines of output'
+        );
     }
 
     function setStatus(kind, text, announceText) {
@@ -155,6 +238,8 @@
     function enterInputMode(prompt) {
         awaitingInput = true;
         inputPrompt = prompt == null ? '' : String(prompt);
+        // Summarize prints that arrived before this input() prompt.
+        flushOutputAnnounceExtras();
         setShellPrompt(inputPrompt || '?');
         setStatus('running', 'Waiting for input…');
         var label = inputPrompt
@@ -552,7 +637,12 @@
     }
 
     function presentRunResult(msg) {
-        if (msg.stdout) appendShell(msg.stdout.replace(/\n$/, ''), 'line-out');
+        if (msg.stdout) {
+            var out = msg.stdout.replace(/\n$/, '');
+            appendShell(out, 'line-out');
+            ingestStdoutForAnnounce(out);
+        }
+        flushOutputAnnounceExtras();
         if (msg.stderr) appendShell(msg.stderr.replace(/\n$/, ''), 'line-err');
         if (msg.exception) appendShell(formatException(msg.exception), 'line-err');
         harvestFromResult(msg);
@@ -566,6 +656,7 @@
         var files = workspace.getState().files;
 
         exitInputMode();
+        resetOutputAnnounce();
         setBusy(true);
         setStatus('running', 'Running…', 'Running ' + entry);
 
@@ -585,6 +676,7 @@
             })
             .catch(function (err) {
                 exitInputMode();
+                flushOutputAnnounceExtras();
                 if (err && err.code === 'timeout') {
                     appendShell(err.message || 'Timed out', 'line-err');
                     // line-err already alerts; keep status visual only.
@@ -721,6 +813,7 @@
         }
         if (result.output) {
             appendShell(result.output, result.ok ? 'line-out' : 'line-err');
+            if (result.ok) announceOutputBlock(result.output);
         }
         return Promise.resolve();
     }
@@ -914,7 +1007,9 @@
                     if (!awaitingInput) setStatus('running', 'Running…');
                 } else if (status === 'stdout') {
                     if (msg && msg.stdout) {
-                        appendShell(String(msg.stdout).replace(/\n$/, ''), 'line-out');
+                        var chunk = String(msg.stdout).replace(/\n$/, '');
+                        appendShell(chunk, 'line-out');
+                        ingestStdoutForAnnounce(chunk);
                     }
                 } else if (status === 'stdin') {
                     enterInputMode(msg && msg.prompt);
