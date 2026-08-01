@@ -9,7 +9,7 @@
 
     var PROTOCOL_VERSION = 1;
     var DEFAULT_TIMEOUT_MS = 5000;
-    var DEFAULT_WORKER_URL = 'worker/pyodide-worker.js';
+    var DEFAULT_WORKER_URL = 'static/worker/pyodide-worker.js';
 
     function createRuntime(options) {
         options = options || {};

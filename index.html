@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/pythonshell.css">
+  <link rel="stylesheet" href="static/css/pythonshell.css">
 </head>
 <body>
   <div id="a11y-status" class="sr-only" role="status" aria-live="polite"></div>
@@ -77,17 +77,17 @@
   <script>
     window.PYTHONSHELL = {
       pyodideVersion: '0.27.5',
-      workerUrl: 'worker/pyodide-worker.js?v=5',
+      workerUrl: 'static/worker/pyodide-worker.js?v=6',
       storageKey: 'pythonshell-workspace-v1',
       defaultTimeoutMs: 5000,
       maxFileBytes: 200000,
       maxFiles: 40
     };
   </script>
-  <script src="js/vendor/ace/ace.js"></script>
-  <script src="js/runtime.js"></script>
-  <script src="js/workspace.js"></script>
-  <script src="js/shell.js"></script>
-  <script src="js/pythonshell.js"></script>
+  <script src="static/js/vendor/ace/ace.js"></script>
+  <script src="static/js/runtime.js"></script>
+  <script src="static/js/workspace.js"></script>
+  <script src="static/js/shell.js"></script>
+  <script src="static/js/pythonshell.js"></script>
 </body>
 </html>

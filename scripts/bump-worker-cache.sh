@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Bump the integer cache-bust query on the Pyodide worker URL in index.html.
-# Run after editing worker/pyodide-worker.js. Does not run on page load.
+# Run after editing static/worker/pyodide-worker.js. Does not run on page load.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -19,13 +19,13 @@ text = index_path.read_text(encoding="utf-8")
 
 pattern = re.compile(
     r"(workerUrl\s*:\s*)(['\"])"
-    r"((?:[^'\"]*)worker/pyodide-worker\.js)"
+    r"((?:[^'\"]*)(?:static/)?worker/pyodide-worker\.js)"
     r"(?:\?v=(\d+))?"
     r"(\2)"
 )
 
 def repl(m):
-    prefix, quote, base, ver, _ = m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)
+    prefix, quote, base, ver = m.group(1), m.group(2), m.group(3), m.group(4)
     n = int(ver) + 1 if ver else 1
     return f"{prefix}{quote}{base}?v={n}{quote}"
 
@@ -35,6 +35,6 @@ if count != 1:
 
 index_path.write_text(new_text, encoding="utf-8")
 
-m = re.search(r"worker/pyodide-worker\.js\?v=(\d+)", new_text)
+m = re.search(r"(?:static/)?worker/pyodide-worker\.js\?v=(\d+)", new_text)
 print(f"worker cache bust -> v={m.group(1) if m else '?'}")
 PY

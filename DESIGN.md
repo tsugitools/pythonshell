@@ -105,19 +105,21 @@ The server only serves static assets (and optionally a thin HTML shell). It neve
 pythonshell/
 ├── DESIGN.md
 ├── README.md
-├── index.html              # preferred entry; thin index.php optional
-├── css/
-│   └── pythonshell.css
-├── js/
-│   ├── pythonshell.js      # UI: files, editor, shell wiring
-│   ├── workspace.js        # localStorage model
-│   ├── shell.js            # command parser + builtins
-│   ├── runtime.js          # worker client (slimmed from pythongrader)
-│   └── vendor/
-│       └── ace/            # pinned Ace build
-└── worker/
-    ├── pyodide-worker.js
-    └── result.py           # exception sanitize / truncate helpers
+├── index.html              # entry (short CDN TTL / bypass cache)
+├── scripts/
+│   └── bump-worker-cache.sh
+└── static/                 # hyper-cacheable on CDN
+    ├── css/pythonshell.css
+    ├── files/              # seed texts (about, romeo, mbox-short)
+    ├── js/
+    │   ├── pythonshell.js
+    │   ├── workspace.js
+    │   ├── shell.js
+    │   ├── runtime.js
+    │   └── vendor/ace/
+    └── worker/
+        ├── pyodide-worker.js
+        └── result.py
 ```
 
 No `register.php`, grade endpoints, or assignment catalog in Phase 1. If the playground is later linked from a course navigation page, that link is just a normal URL to this tool.
@@ -129,7 +131,7 @@ The page exposes a small configuration object:
 ```javascript
 window.PYTHONSHELL = {
     pyodideVersion: '0.27.5',
-    workerUrl: 'worker/pyodide-worker.js',
+    workerUrl: 'static/worker/pyodide-worker.js?v=5',
     storageKey: 'pythonshell-workspace-v1',
     defaultTimeoutMs: 5000,
     maxFileBytes: 200000,

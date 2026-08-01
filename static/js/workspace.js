@@ -13,9 +13,9 @@
         "name = input('What is your name? ')\n" +
         "print('Hello', name)\n";
     var DEFAULT_SEED_FILES = [
-        { name: 'about.txt', url: 'files/about.txt' },
-        { name: 'romeo.txt', url: 'files/romeo.txt' },
-        { name: 'mbox-short.txt', url: 'files/mbox-short.txt' }
+        { name: 'about.txt', url: 'static/files/about.txt' },
+        { name: 'romeo.txt', url: 'static/files/romeo.txt' },
+        { name: 'mbox-short.txt', url: 'static/files/mbox-short.txt' }
     ];
 
     function emptyDefaultWorkspace() {

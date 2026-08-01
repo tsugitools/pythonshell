@@ -329,7 +329,7 @@
         ta.setAttribute('aria-hidden', 'true');
         ta.setAttribute('tabindex', '-1');
 
-        ace.config.set('basePath', 'js/vendor/ace');
+        ace.config.set('basePath', 'static/js/vendor/ace');
         editor = ace.edit(host);
         editor.setTheme('ace/theme/chrome');
         editor.session.setMode('ace/mode/python');
@@ -725,7 +725,7 @@
         });
 
         runtime = window.PythonShellRuntime.create({
-            workerUrl: cfg.workerUrl || 'worker/pyodide-worker.js',
+            workerUrl: cfg.workerUrl || 'static/worker/pyodide-worker.js',
             onStatus: function (status, msg) {
                 if (status === 'loading') {
                     setStatus('loading', (msg && msg.message) || 'Loading Python…');

@@ -48,13 +48,19 @@ Pipes, redirects, globs, and a Python REPL are not supported.
 
 - Workspace key: `pythonshell-workspace-v1` (see `window.PYTHONSHELL.storageKey`).
 - Clearing site data, using another browser, or private mode can lose work.
-- **Reset workspace** clears localStorage for this tool and restores defaults: `main.py`, `about.txt`, `romeo.txt`, and `mbox-short.txt` (from `files/`).
+- **Reset workspace** clears localStorage for this tool and restores defaults: `main.py`, `about.txt`, `romeo.txt`, and `mbox-short.txt` (from `static/files/`).
+
+## Caching
+
+- Put a long TTL on `/static/*` (Cloudflare or similar).
+- Leave `index.html` lightly cached or bypassed so clients see updated `workerUrl` `?v=N` values.
+- After editing `static/worker/`, run `./scripts/bump-worker-cache.sh`.
 
 ## Runtime
 
 - Pyodide **0.27.5** (CDN on first load; then browser-cached).
 - Always runs in a Web Worker; infinite loops time out and the worker is replaced.
-- Ace editor (vendored under `js/vendor/ace/`).
+- Ace editor (vendored under `static/js/vendor/ace/`).
 
 ## Relationship to PythonGrader
 
