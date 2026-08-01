@@ -174,8 +174,17 @@ button.danger {
 }
 
 .file-actions button {
-    padding: 0.2rem 0.45rem;
-    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    line-height: 0;
+}
+
+.file-actions .icon {
+    width: 1rem;
+    height: 1rem;
+    display: block;
 }
 
 .file-list {

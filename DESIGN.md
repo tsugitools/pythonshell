@@ -15,7 +15,7 @@ PythonShell is an experimentation space, not an assessment tool. There is no Gra
 - Run real Python in the browser with no server-side code execution.
 - Support a fast **Edit → Run → Inspect** learner loop.
 - Provide a multi-file editor workspace (create, open, rename, delete).
-- Provide a deliberately small simulated shell (`python`, `ls`, `cat`, and a few companions).
+- Provide a deliberately small simulated shell (`python`, `ls`, `rm`, and a few companions).
 - Persist the workspace only in `localStorage`.
 - Work without an LTI launch: opening the tool URL is enough.
 - Capture standard output, standard error, exceptions, and tracebacks.
@@ -71,7 +71,7 @@ The learner workflow is:
 2. Edit `main.py` or create additional files.
 3. Press **Run**, or type `python main.py` in the shell.
 4. Inspect shell output or correct a syntax/runtime error.
-5. Use `ls` and `cat` to explore the workspace.
+5. Use `ls` to explore the workspace; open files in the editor to view them.
 6. Return later in the same browser; the workspace restores from `localStorage`.
 
 Phase 1 is a **command shell**, not a Python REPL. The prompt is `$`, not `>>>`. Typing bare Python expressions at the prompt is not supported; learners run files with `python`.
@@ -167,11 +167,11 @@ Rules:
 - Filenames must be safe relative paths: no absolute paths, no `..`, no empty segments; allow simple nested paths only if the UI supports folders (Phase 1 may stay flat: `name.ext` only).
 - There is no cross-device or cross-browser sync. Document that clearing site data loses work.
 
-Phase 1 recommendation: keep the namespace **flat** (no directories in the file tree) so `ls`, `cat`, and `cd` stay trivial. Nested folders can wait for Phase 2.
+Phase 1 recommendation: keep the namespace **flat** (no directories in the file tree) so `ls` and `cd` stay trivial. Nested folders can wait for Phase 2.
 
 ## Simulated shell
 
-JavaScript parses each command line. Only `python` talks to the Pyodide worker. Builtins such as `ls` and `cat` read the workspace model in the main thread.
+JavaScript parses each command line. Only `python` talks to the Pyodide worker. Builtins such as `ls` and `rm` use the workspace model in the main thread.
 
 ### Phase 1 command set
 
@@ -179,7 +179,7 @@ JavaScript parses each command line. Only `python` talks to the Pyodide worker. 
 | ------- | -------- |
 | `help` | List supported commands |
 | `ls` `[path]` | List workspace files (default: cwd / root) |
-| `cat` `<file>` | Print file contents from the workspace |
+| `rm` `<file...>` | Delete file(s) from the workspace |
 | `pwd` | Print current virtual directory |
 | `cd` `[path]` | Change virtual directory within the workspace root only |
 | `python` `<file.py>` | Sync workspace → worker FS, run file as `__main__` |
@@ -228,7 +228,7 @@ Worker FS: /home/pyodide/work/
 ```
 
 - Each `python` run gets a clean work directory projection (same spirit as PythonGrader’s `resetWorkDir`).
-- `ls`, `cat`, rename, and delete operate on the workspace model, not by spawning shell processes inside Pyodide.
+- `ls`, `rm`, rename, and delete operate on the workspace model, not by spawning shell processes inside Pyodide.
 - After a run, files created or modified by student Python may be harvested back into the workspace:
   - Phase 1: auto-merge new or changed non-reserved filenames into the workspace and refresh the file tree; or list them and offer **Keep**.
   - Reserved / internal names used by the runtime must never be imported as editable workspace files.
@@ -405,9 +405,9 @@ Phase 1 targets are pragmatic:
 
 ### Shell builtins
 
-- `help`, `ls`, `cat`, `pwd`, `cd`, `echo`, `clear`;
+- `help`, `ls`, `rm`, `pwd`, `cd`, `echo`, `clear`;
 - unknown command message;
-- `cat` missing file;
+- `rm` missing file / last file;
 - `cd` cannot leave workspace root;
 - no pipe/redirect parsing.
 
@@ -467,7 +467,7 @@ Keep Phase 1 to:
 Success criteria:
 
 - a learner can open the URL, edit multiple files, run them, and reload the page without losing work in the same browser;
-- `ls` / `cat` / `python` behave consistently with the editor;
+- `ls` / `rm` / `python` behave consistently with the editor;
 - an infinite loop does not require closing the tab.
 
 ### Phase 2 — Better playground ergonomics
@@ -516,7 +516,7 @@ Phase 1 is complete when all are true:
 - [ ] Multi-file create / open / rename / delete works.
 - [ ] Workspace persists in `localStorage` and restores on reload.
 - [ ] Reset workspace restores defaults.
-- [ ] Shell supports `help`, `ls`, `cat`, `pwd`, `cd`, `python`, `clear`, and `echo`.
+- [ ] Shell supports `help`, `ls`, `rm`, `pwd`, `cd`, `python`, `clear`, and `echo`.
 - [ ] Unknown commands show a helpful error.
 - [ ] Standard input, stdout, stderr, syntax errors, and exceptions work.
 - [ ] No LTI launch is required to use the tool.

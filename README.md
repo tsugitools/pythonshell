@@ -26,7 +26,7 @@ Or place the folder under your course / Tsugi `mod/` tree and open its URL.
 2. Edit `main.py` or create more files (+ / rename / delete).
 3. Press **Run**, or type `python main.py` in the shell.
 4. When `input()` runs, answer in the shell (the `$` prompt becomes the Python prompt).
-5. Use `ls`, `cat`, `rm`, `help`, etc.
+5. Use `ls`, `rm`, `help`, etc.
 6. Reload the page; the workspace restores from localStorage.
 
 ## Shell commands
@@ -35,8 +35,9 @@ Or place the folder under your course / Tsugi `mod/` tree and open its URL.
 | ------- | ------- |
 | `help` | List commands |
 | `ls` | List files |
-| `cat <file>` | Show file |
 | `rm <file...>` | Delete file(s) (cannot remove the last file) |
+| `upload` | Open a file picker to upload into the workspace |
+| `download <file>` | Download a file to your computer |
 | `pwd` / `cd` | Working directory (flat workspace root) |
 | `python <file.py>` | Run a file |
 | `echo` / `clear` | Niceties |

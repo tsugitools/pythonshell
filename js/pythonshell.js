@@ -14,7 +14,9 @@
     var awaitingInput = false;
     var inputPrompt = '';
     var history = [];
-    var historyIndex = -1;
+    var historyIndex = 0;
+    var historyDraft = '';
+    var HISTORY_MAX = 200;
 
     function $(sel) {
         return document.querySelector(sel);
@@ -59,7 +61,7 @@
         setShellPrompt('$');
         var shellInput = $('#shell-input');
         if (shellInput) {
-            shellInput.placeholder = 'help, ls, cat, rm, python main.py';
+            shellInput.placeholder = 'help, ls, rm, python main.py';
         }
     }
 
@@ -111,6 +113,99 @@
         }
         workspace.setFileContent(name, content);
         workspace.flushPersist();
+    }
+
+    function downloadWorkspaceFile(name) {
+        flushEditorToWorkspace();
+        if (!name || workspace.getFile(name) == null) {
+            return { ok: false, error: 'File not found: ' + name };
+        }
+        var content = workspace.getFile(name);
+        var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () {
+            URL.revokeObjectURL(url);
+        }, 1000);
+        announce('Downloaded ' + name);
+        return { ok: true };
+    }
+
+    function basenameFromUpload(path) {
+        var name = String(path || '').replace(/\\/g, '/');
+        var slash = name.lastIndexOf('/');
+        if (slash >= 0) name = name.slice(slash + 1);
+        return name;
+    }
+
+    function readUploadedFile(file) {
+        return new Promise(function (resolve, reject) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                resolve(reader.result == null ? '' : String(reader.result));
+            };
+            reader.onerror = function () {
+                reject(new Error('Could not read ' + (file && file.name)));
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    function uploadFiles(fileList) {
+        var files = Array.prototype.slice.call(fileList || []);
+        if (!files.length) return Promise.resolve([]);
+
+        flushEditorToWorkspace();
+
+        var results = [];
+        var chain = Promise.resolve();
+        files.forEach(function (file) {
+            chain = chain.then(function () {
+                var name = basenameFromUpload(file.name);
+                if (!workspace.isSafeFilename(name)) {
+                    results.push({ ok: false, name: name || file.name, error: 'Invalid filename' });
+                    return;
+                }
+                if (workspace.getFile(name) != null) {
+                    if (!window.confirm('Replace existing file "' + name + '"?')) {
+                        results.push({ ok: false, name: name, error: 'Skipped' });
+                        return;
+                    }
+                }
+                return readUploadedFile(file).then(function (text) {
+                    var res = workspace.putFile(name, text, { activate: true });
+                    if (!res.ok) {
+                        results.push({ ok: false, name: name, error: res.error });
+                    } else {
+                        results.push({
+                            ok: true,
+                            name: name,
+                            overwritten: !!res.overwritten
+                        });
+                    }
+                });
+            });
+        });
+
+        return chain.then(function () {
+            loadActiveIntoEditor();
+            renderFiles();
+            renderTabs();
+            return results;
+        });
+    }
+
+    function openUploadPicker() {
+        var input = $('#file-upload-input');
+        if (!input) return;
+        input.value = '';
+        input.click();
     }
 
     function loadActiveIntoEditor() {
@@ -336,19 +431,94 @@
             );
     }
 
+    function historyStorageKey() {
+        return (cfg.storageKey || 'pythonshell-workspace-v1') + '-history';
+    }
+
+    function loadShellHistory() {
+        try {
+            var raw = localStorage.getItem(historyStorageKey());
+            if (!raw) return;
+            var parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) return;
+            history = parsed
+                .filter(function (line) {
+                    return typeof line === 'string' && line.length > 0;
+                })
+                .slice(-HISTORY_MAX);
+        } catch (e) {
+            history = [];
+        }
+        historyIndex = history.length;
+        historyDraft = '';
+    }
+
+    function persistShellHistory() {
+        try {
+            localStorage.setItem(historyStorageKey(), JSON.stringify(history));
+        } catch (e) {
+            /* quota */
+        }
+    }
+
+    function pushShellHistory(line) {
+        line = line == null ? '' : String(line).replace(/^\s+|\s+$/g, '');
+        if (!line) return;
+        if (history.length && history[history.length - 1] === line) {
+            historyIndex = history.length;
+            historyDraft = '';
+            return;
+        }
+        history.push(line);
+        if (history.length > HISTORY_MAX) {
+            history = history.slice(-HISTORY_MAX);
+        }
+        historyIndex = history.length;
+        historyDraft = '';
+        persistShellHistory();
+    }
+
+    function setShellInputValue(input, value) {
+        input.value = value == null ? '' : String(value);
+        try {
+            var len = input.value.length;
+            input.setSelectionRange(len, len);
+        } catch (e) {
+            /* ignore */
+        }
+    }
+
+    function historyUp(input) {
+        if (!history.length) return;
+        if (historyIndex === history.length) {
+            historyDraft = input.value;
+        }
+        historyIndex = Math.max(0, historyIndex - 1);
+        setShellInputValue(input, history[historyIndex] || '');
+    }
+
+    function historyDown(input) {
+        if (!history.length) return;
+        historyIndex = Math.min(history.length, historyIndex + 1);
+        if (historyIndex >= history.length) {
+            setShellInputValue(input, historyDraft);
+        } else {
+            setShellInputValue(input, history[historyIndex] || '');
+        }
+    }
+
     function onRunClick() {
         var st = workspace.getState();
-        appendShell('$ python ' + st.activeFile, 'line-cmd');
+        var cmd = 'python ' + st.activeFile;
+        appendShell('$ ' + cmd, 'line-cmd');
+        pushShellHistory(cmd);
         runEntry(st.activeFile).catch(function () { /* already displayed */ });
     }
 
     function execShellLine(line) {
         flushEditorToWorkspace();
         appendShell('$ ' + line, 'line-cmd');
-        if (line && history[history.length - 1] !== line) {
-            history.push(line);
-        }
-        historyIndex = history.length;
+        pushShellHistory(line);
 
         var result = shell.exec(line);
         if (result.async && result.promise) {
@@ -390,18 +560,15 @@
                 execShellLine(line);
                 return;
             }
-            if (awaitingInput) return; // no history while answering input()
-            if (ev.key === 'ArrowUp') {
+            if (awaitingInput) return; // no command history while answering input()
+            if (ev.key === 'ArrowUp' || (ev.ctrlKey && (ev.key === 'p' || ev.key === 'P'))) {
                 ev.preventDefault();
-                if (!history.length) return;
-                historyIndex = Math.max(0, historyIndex - 1);
-                input.value = history[historyIndex] || '';
+                historyUp(input);
                 return;
             }
-            if (ev.key === 'ArrowDown') {
+            if (ev.key === 'ArrowDown' || (ev.ctrlKey && (ev.key === 'n' || ev.key === 'N'))) {
                 ev.preventDefault();
-                historyIndex = Math.min(history.length, historyIndex + 1);
-                input.value = historyIndex >= history.length ? '' : history[historyIndex];
+                historyDown(input);
             }
         });
     }
@@ -465,6 +632,43 @@
             loadActiveIntoEditor();
             renderFiles();
             renderTabs();
+        });
+        $('#btn-upload-file').addEventListener('click', function () {
+            openUploadPicker();
+        });
+        var uploadInput = $('#file-upload-input');
+        if (uploadInput) {
+            uploadInput.addEventListener('change', function () {
+                uploadFiles(uploadInput.files).then(function (results) {
+                    var ok = results.filter(function (r) {
+                        return r.ok;
+                    });
+                    var bad = results.filter(function (r) {
+                        return !r.ok && r.error !== 'Skipped';
+                    });
+                    if (ok.length) {
+                        appendShell(
+                            'Uploaded: ' +
+                                ok
+                                    .map(function (r) {
+                                        return r.name + (r.overwritten ? ' (replaced)' : '');
+                                    })
+                                    .join(', '),
+                            'line-out'
+                        );
+                        announce('Uploaded ' + ok.length + ' file(s)');
+                    }
+                    bad.forEach(function (r) {
+                        appendShell('Upload failed (' + r.name + '): ' + r.error, 'line-err');
+                    });
+                    uploadInput.value = '';
+                });
+            });
+        }
+        $('#btn-download-file').addEventListener('click', function () {
+            var st = workspace.getState();
+            var res = downloadWorkspaceFile(st.activeFile);
+            if (!res.ok) window.alert(res.error);
         });
         $('#btn-delete-file').addEventListener('click', function () {
             var st = workspace.getState();
@@ -534,6 +738,13 @@
                 renderFiles();
                 renderTabs();
             },
+            onDownload: function (name) {
+                return downloadWorkspaceFile(name);
+            },
+            onUpload: function () {
+                openUploadPicker();
+                return { ok: true };
+            },
             runPython: function (entry) {
                 return runEntry(entry);
             }
@@ -541,6 +752,7 @@
 
         bindButtons();
         bindShellInput();
+        loadShellHistory();
         setShellPrompt('$');
 
         clearShell();

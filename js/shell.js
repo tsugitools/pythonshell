@@ -1,7 +1,7 @@
 /**
  * PythonShell simulated command shell.
  *
- * Builtins (ls, cat, …) use the workspace model. `python` is delegated
+ * Builtins (ls, rm, …) use the workspace model. `python` is delegated
  * via options.runPython(entry).
  *
  * Exposed as window.PythonShellShell.
@@ -25,14 +25,17 @@
         var runPython = typeof options.runPython === 'function' ? options.runPython : null;
         var onClear = typeof options.onClear === 'function' ? options.onClear : function () {};
         var onMutate = typeof options.onMutate === 'function' ? options.onMutate : function () {};
+        var onDownload = typeof options.onDownload === 'function' ? options.onDownload : null;
+        var onUpload = typeof options.onUpload === 'function' ? options.onUpload : null;
 
         function helpText() {
             return [
                 'Supported commands:',
                 '  help              Show this help',
                 '  ls [file]         List workspace files',
-                '  cat <file>        Print a file',
                 '  rm <file...>      Delete file(s)',
+                '  upload            Upload file(s) into the workspace',
+                '  download <file>   Download a file',
                 '  pwd               Print working directory',
                 '  cd [path]         Change directory (workspace root only)',
                 '  python <file.py>  Run a Python file',
@@ -83,21 +86,6 @@
             return { ok: true, output: files.join('  ') };
         }
 
-        function cmdCat(args) {
-            if (!args[0]) {
-                return { ok: false, output: 'shell: cat: missing file operand' };
-            }
-            var path = workspace.resolvePath(args[0]);
-            if (path == null || path === '.') {
-                return { ok: false, output: 'shell: cat: invalid file: ' + args[0] };
-            }
-            var content = workspace.getFile(path);
-            if (content == null) {
-                return { ok: false, output: 'shell: cat: ' + args[0] + ': No such file' };
-            }
-            return { ok: true, output: content };
-        }
-
         function cmdRm(args) {
             if (!args.length) {
                 return { ok: false, output: 'shell: rm: missing operand' };
@@ -126,6 +114,44 @@
                 return { ok: false, output: errors.join('\n') };
             }
             return { ok: true, output: '' };
+        }
+
+        function cmdUpload() {
+            if (!onUpload) {
+                return { ok: false, output: 'shell: upload: not available' };
+            }
+            var res = onUpload();
+            if (!res || !res.ok) {
+                return {
+                    ok: false,
+                    output: 'shell: upload: ' + ((res && res.error) || 'failed')
+                };
+            }
+            return { ok: true, output: 'Choose file(s) to upload…' };
+        }
+
+        function cmdDownload(args) {
+            if (!args[0]) {
+                return { ok: false, output: 'shell: download: missing file operand' };
+            }
+            var path = workspace.resolvePath(args[0]);
+            if (path == null || path === '.') {
+                return { ok: false, output: 'shell: download: invalid file: ' + args[0] };
+            }
+            if (workspace.getFile(path) == null) {
+                return { ok: false, output: "shell: download: cannot download '" + args[0] + "': No such file" };
+            }
+            if (!onDownload) {
+                return { ok: false, output: 'shell: download: not available' };
+            }
+            var res = onDownload(path);
+            if (!res || !res.ok) {
+                return {
+                    ok: false,
+                    output: 'shell: download: ' + ((res && res.error) || 'failed')
+                };
+            }
+            return { ok: true, output: 'Downloaded ' + path };
         }
 
         function cmdEcho(args) {
@@ -203,11 +229,14 @@
                 case 'ls':
                     result = cmdLs(args);
                     break;
-                case 'cat':
-                    result = cmdCat(args);
-                    break;
                 case 'rm':
                     result = cmdRm(args);
+                    break;
+                case 'upload':
+                    result = cmdUpload();
+                    break;
+                case 'download':
+                    result = cmdDownload(args);
                     break;
                 case 'echo':
                     result = cmdEcho(args);

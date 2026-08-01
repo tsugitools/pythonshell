@@ -264,6 +264,36 @@
             return { ok: true, name: name };
         }
 
+        /** Create or overwrite a file (used by upload). */
+        function putFile(name, content, options) {
+            options = options || {};
+            name = (name || '').trim();
+            if (!isSafeFilename(name)) {
+                return { ok: false, error: 'Invalid filename. Use letters, numbers, ., _, -' };
+            }
+            content = content == null ? '' : String(content);
+            if (byteLength(content) > maxFileBytes) {
+                return {
+                    ok: false,
+                    error: 'File exceeds size limit (' + maxFileBytes + ' bytes): ' + name
+                };
+            }
+            var existed = name in state.files;
+            if (!existed && Object.keys(state.files).length >= maxFiles) {
+                return { ok: false, error: 'Too many files (max ' + maxFiles + ')' };
+            }
+            state.files[name] = content;
+            if (options.activate !== false) {
+                if (state.openTabs.indexOf(name) < 0) state.openTabs.push(name);
+                state.activeFile = name;
+            } else if (state.openTabs.indexOf(name) < 0) {
+                /* leave inactive unless already open */
+            }
+            schedulePersist();
+            notify();
+            return { ok: true, name: name, overwritten: existed };
+        }
+
         function deleteFile(name) {
             if (!(name in state.files)) {
                 return { ok: false, error: 'File not found: ' + name };
@@ -408,6 +438,7 @@
             getFile: getFile,
             setFileContent: setFileContent,
             createFile: createFile,
+            putFile: putFile,
             deleteFile: deleteFile,
             renameFile: renameFile,
             setActiveFile: setActiveFile,
