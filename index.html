@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PythonShell</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/pythonshell.css">
+</head>
+<body>
+  <div id="a11y-status" class="sr-only" role="status" aria-live="polite"></div>
+
+  <div id="app">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="brand">PythonShell</div>
+        <div class="storage-note">Experiment freely. Work is saved only in this browser (localStorage).</div>
+      </div>
+      <div class="toolbar">
+        <button type="button" class="primary" id="btn-run">Run</button>
+        <button type="button" id="btn-restart">Restart runtime</button>
+        <button type="button" class="danger" id="btn-reset">Reset workspace</button>
+        <span id="runtime-status" class="status" aria-live="polite">Starting…</span>
+      </div>
+    </header>
+
+    <div class="main">
+      <aside class="files-panel" aria-label="Files">
+        <div class="panel-head">
+          <span>Files</span>
+          <div class="file-actions">
+            <button type="button" id="btn-new-file" title="New file">+</button>
+            <button type="button" id="btn-rename-file" title="Rename">✎</button>
+            <button type="button" id="btn-delete-file" title="Delete">⌫</button>
+          </div>
+        </div>
+        <ul id="file-list" class="file-list"></ul>
+      </aside>
+
+      <section class="editor-panel" aria-label="Editor">
+        <div id="tabs" class="tabs" role="tablist" aria-label="Open files"></div>
+        <div id="editor-wrap" class="editor-wrap">
+          <label class="sr-only" for="source-fallback">Code editor</label>
+          <textarea id="source-fallback" spellcheck="false"></textarea>
+        </div>
+      </section>
+
+      <div class="bottom-row">
+        <section class="shell-panel" aria-label="Shell">
+          <div class="panel-head">Shell</div>
+          <div id="shell-output" class="shell-output" aria-live="polite"></div>
+          <div class="shell-input-row">
+            <span class="shell-prompt" aria-hidden="true">$</span>
+            <label class="sr-only" for="shell-input">Shell command</label>
+            <input id="shell-input" type="text" autocomplete="off" spellcheck="false" placeholder="help, ls, cat, rm, python main.py">
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.PYTHONSHELL = {
+      pyodideVersion: '0.27.5',
+      workerUrl: 'worker/pyodide-worker.js?v=4',
+      storageKey: 'pythonshell-workspace-v1',
+      defaultTimeoutMs: 5000,
+      maxFileBytes: 200000,
+      maxFiles: 40
+    };
+  </script>
+  <script src="js/vendor/ace/ace.js"></script>
+  <script src="js/runtime.js"></script>
+  <script src="js/workspace.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/pythonshell.js"></script>
+</body>
+</html>
