@@ -33,6 +33,22 @@
     white-space: nowrap;
 }
 
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    padding: 0.4rem 0.75rem;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 0 0 4px 0;
+}
+
+.skip-link:focus {
+    left: 0;
+}
+
 html, body {
     margin: 0;
     height: 100%;

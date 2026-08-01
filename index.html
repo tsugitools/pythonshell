@@ -10,9 +10,11 @@
   <link rel="stylesheet" href="static/css/pythonshell.css">
 </head>
 <body>
-  <div id="a11y-status" class="sr-only" role="status" aria-live="polite"></div>
+  <div id="a11y-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="a11y-alert" class="sr-only" role="alert"></div>
 
   <div id="app">
+    <a class="skip-link" href="#shell-input">Skip to shell</a>
     <header class="topbar">
       <div class="brand-block">
         <h1 class="brand">PythonShell - A Python Playground</h1>
@@ -22,7 +24,7 @@
         <button type="button" class="primary" id="btn-run">Run</button>
         <button type="button" id="btn-restart">Restart runtime</button>
         <button type="button" class="danger" id="btn-reset">Reset workspace</button>
-        <span id="runtime-status" class="status" aria-live="polite">Starting…</span>
+        <span id="runtime-status" class="status">Starting…</span>
       </div>
     </header>
 
@@ -67,11 +69,26 @@
           <div class="panel-head">
             <h2 class="panel-title">Linux-like shell</h2>
           </div>
-          <div id="shell-output" class="shell-output" aria-live="polite"></div>
+          <div
+            id="shell-output"
+            class="shell-output"
+            role="log"
+            aria-live="polite"
+            aria-relevant="additions"
+            aria-atomic="false"
+            aria-label="Shell output"
+          ></div>
           <div class="shell-input-row">
-            <span class="shell-prompt" aria-hidden="true">$</span>
-            <label class="sr-only" for="shell-input">Shell command</label>
-            <input id="shell-input" type="text" autocomplete="off" spellcheck="false" placeholder="help, ls, rm, python main.py — ↑ history">
+            <span id="shell-prompt" class="shell-prompt" aria-hidden="true">$</span>
+            <label class="sr-only" for="shell-input" id="shell-input-label">Shell command</label>
+            <input
+              id="shell-input"
+              type="text"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Shell command"
+              placeholder="help, ls, rm, python main.py — ↑ history"
+            >
           </div>
         </section>
       </div>

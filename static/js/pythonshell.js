@@ -22,29 +22,50 @@
         return document.querySelector(sel);
     }
 
-    function announce(msg) {
-        var el = $('#a11y-status');
-        if (el) el.textContent = msg || '';
+    function announce(msg, opts) {
+        opts = opts || {};
+        var el = $(opts.assertive ? '#a11y-alert' : '#a11y-status');
+        if (!el) return;
+        var text = msg == null ? '' : String(msg);
+        // Clear first so identical consecutive messages are still spoken.
+        el.textContent = '';
+        if (!text) return;
+        window.setTimeout(function () {
+            el.textContent = text;
+        }, 30);
     }
 
-    function setStatus(kind, text) {
+    function setStatus(kind, text, announceText) {
         var el = $('#runtime-status');
         if (!el) return;
         el.textContent = text;
         el.className = 'status' + (kind ? ' is-' + kind : '');
+        // Visible status is not a live region — announce once via #a11y-status / #a11y-alert.
+        if (announceText) announce(announceText, { assertive: kind === 'error' });
     }
 
     function setShellPrompt(text) {
-        var el = $('.shell-prompt');
+        var el = $('#shell-prompt');
         if (el) el.textContent = text;
+    }
+
+    function setShellInputLabel(text) {
+        var label = $('#shell-input-label');
+        var input = $('#shell-input');
+        if (label) label.textContent = text;
+        if (input) input.setAttribute('aria-label', text);
     }
 
     function enterInputMode(prompt) {
         awaitingInput = true;
         inputPrompt = prompt == null ? '' : String(prompt);
-        setShellPrompt(inputPrompt);
+        setShellPrompt(inputPrompt || '?');
         setStatus('running', 'Waiting for input…');
-        announce('Python is waiting for input');
+        var label = inputPrompt
+            ? 'Python input: ' + inputPrompt
+            : 'Python input';
+        setShellInputLabel(label);
+        announce(label); // richer than status text; includes the Python prompt
         var shellInput = $('#shell-input');
         if (shellInput) {
             shellInput.disabled = false;
@@ -59,6 +80,7 @@
         awaitingInput = false;
         inputPrompt = '';
         setShellPrompt('$');
+        setShellInputLabel('Shell command');
         var shellInput = $('#shell-input');
         if (shellInput) {
             shellInput.placeholder = 'help, ls, rm, python main.py';
@@ -77,8 +99,10 @@
         runBtn.hidden = !show;
         if (!show) {
             runBtn.disabled = true;
+            runBtn.removeAttribute('aria-label');
         } else {
             runBtn.disabled = busy || !(runtime && runtime.isReady());
+            runBtn.setAttribute('aria-label', 'Run ' + active);
         }
     }
 
@@ -100,6 +124,12 @@
         div.textContent = text;
         out.appendChild(div);
         out.scrollTop = out.scrollHeight;
+        if (className === 'line-err') {
+            // Short polite summary; full text remains in the log for review.
+            var summary = String(text).split('\n')[0];
+            if (summary.length > 160) summary = summary.slice(0, 157) + '…';
+            announce(summary, { assertive: true });
+        }
     }
 
     function clearShell() {
@@ -248,17 +278,20 @@
         list.innerHTML = '';
         workspace.listFiles().forEach(function (name) {
             var li = document.createElement('li');
-            if (name === st.activeFile) li.className = 'active';
+            var isActive = name === st.activeFile;
+            if (isActive) li.className = 'active';
             var btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'file-item';
             btn.textContent = name;
+            if (isActive) btn.setAttribute('aria-current', 'true');
             btn.addEventListener('click', function () {
                 flushEditorToWorkspace();
                 workspace.setActiveFile(name);
                 loadActiveIntoEditor();
                 renderFiles();
                 renderTabs();
+                announce('Editing ' + name);
             });
             li.appendChild(btn);
             list.appendChild(li);
@@ -271,14 +304,16 @@
         if (!tabs) return;
         tabs.innerHTML = '';
         st.openTabs.forEach(function (name) {
+            var selected = name === st.activeFile;
             var tab = document.createElement('div');
-            tab.className = 'tab' + (name === st.activeFile ? ' active' : '');
-            tab.setAttribute('role', 'tab');
-            tab.setAttribute('aria-selected', name === st.activeFile ? 'true' : 'false');
+            tab.className = 'tab' + (selected ? ' active' : '');
 
             var openBtn = document.createElement('button');
             openBtn.type = 'button';
             openBtn.className = 'tab-open';
+            openBtn.setAttribute('role', 'tab');
+            openBtn.setAttribute('aria-selected', selected ? 'true' : 'false');
+            openBtn.setAttribute('tabindex', selected ? '0' : '-1');
             openBtn.textContent = name;
             openBtn.addEventListener('click', function () {
                 flushEditorToWorkspace();
@@ -286,12 +321,14 @@
                 loadActiveIntoEditor();
                 renderFiles();
                 renderTabs();
+                announce('Editing ' + name);
             });
 
             var closeBtn = document.createElement('button');
             closeBtn.type = 'button';
             closeBtn.className = 'tab-close';
             closeBtn.setAttribute('aria-label', 'Close ' + name);
+            closeBtn.setAttribute('tabindex', selected ? '0' : '-1');
             closeBtn.textContent = '×';
             closeBtn.addEventListener('click', function (ev) {
                 ev.stopPropagation();
@@ -304,11 +341,43 @@
                 loadActiveIntoEditor();
                 renderFiles();
                 renderTabs();
+                announce('Closed ' + name + ', editing ' + workspace.getState().activeFile);
             });
 
             tab.appendChild(openBtn);
             tab.appendChild(closeBtn);
             tabs.appendChild(tab);
+        });
+    }
+
+    function bindTablistKeys() {
+        var tabs = $('#tabs');
+        if (!tabs || tabs.dataset.keysBound) return;
+        tabs.dataset.keysBound = '1';
+        tabs.addEventListener('keydown', function (ev) {
+            if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight' && ev.key !== 'Home' && ev.key !== 'End') {
+                return;
+            }
+            var tabBtns = Array.prototype.slice.call(tabs.querySelectorAll('[role="tab"]'));
+            if (!tabBtns.length) return;
+            var i = tabBtns.indexOf(document.activeElement);
+            if (i < 0) {
+                for (var t = 0; t < tabBtns.length; t++) {
+                    if (tabBtns[t].getAttribute('aria-selected') === 'true') {
+                        i = t;
+                        break;
+                    }
+                }
+            }
+            if (i < 0) i = 0;
+            var next = i;
+            if (ev.key === 'ArrowLeft') next = (i - 1 + tabBtns.length) % tabBtns.length;
+            if (ev.key === 'ArrowRight') next = (i + 1) % tabBtns.length;
+            if (ev.key === 'Home') next = 0;
+            if (ev.key === 'End') next = tabBtns.length - 1;
+            ev.preventDefault();
+            tabBtns[next].focus();
+            tabBtns[next].click();
         });
     }
 
@@ -402,8 +471,7 @@
 
         exitInputMode();
         setBusy(true);
-        setStatus('running', 'Running…');
-        announce('Running ' + entry);
+        setStatus('running', 'Running…', 'Running ' + entry);
 
         var timeoutMs = cfg.defaultTimeoutMs || 5000;
         return runtime
@@ -411,19 +479,23 @@
             .then(function (msg) {
                 exitInputMode();
                 presentRunResult(msg);
-                setStatus('ready', 'Ready');
-                announce('Finished running ' + entry);
+                var failed = !!(msg && (msg.exception || (msg.stderr && String(msg.stderr).trim())));
+                if (failed) {
+                    setStatus('ready', 'Ready', 'Finished ' + entry + ' with errors');
+                } else {
+                    setStatus('ready', 'Ready', 'Finished running ' + entry);
+                }
                 return msg;
             })
             .catch(function (err) {
                 exitInputMode();
                 if (err && err.code === 'timeout') {
                     appendShell(err.message || 'Timed out', 'line-err');
+                    // line-err already alerts; keep status visual only.
                     setStatus('error', 'Timed out — runtime restarted');
-                    announce('Execution timed out');
                     if (err.recovered) {
                         return err.recovered.then(function () {
-                            setStatus('ready', 'Ready');
+                            setStatus('ready', 'Ready', 'Runtime ready');
                             setBusy(false);
                         }).catch(function () {
                             setBusy(false);
@@ -432,7 +504,6 @@
                 } else {
                     appendShell((err && err.message) || String(err), 'line-err');
                     setStatus('error', 'Error');
-                    announce('Run failed');
                 }
                 throw err;
             })
@@ -548,7 +619,10 @@
                 // Other errors are presented inside runEntry.
             });
         }
-        if (result.cleared) return Promise.resolve();
+        if (result.cleared) {
+            announce('Shell cleared');
+            return Promise.resolve();
+        }
         if (result.output) {
             appendShell(result.output, result.ok ? 'line-out' : 'line-err');
         }
@@ -571,7 +645,7 @@
                     if (!runtime.respondStdin(line)) {
                         appendShell('shell: no program is waiting for input', 'line-err');
                         setBusy(false);
-                        setStatus('ready', 'Ready');
+                        setStatus('ready', 'Ready', 'Ready');
                     }
                     return;
                 }
@@ -596,11 +670,11 @@
         $('#btn-restart').addEventListener('click', function () {
             exitInputMode();
             setBusy(true);
-            setStatus('loading', 'Restarting…');
+            setStatus('loading', 'Restarting…', 'Restarting runtime');
             runtime
                 .restart()
                 .then(function () {
-                    setStatus('ready', 'Ready');
+                    setStatus('ready', 'Ready', 'Runtime ready');
                     appendShell('Runtime restarted.', 'line-out');
                     setBusy(false);
                 })
@@ -639,13 +713,15 @@
             loadActiveIntoEditor();
             renderFiles();
             renderTabs();
+            announce('Created ' + res.name);
         });
         $('#btn-rename-file').addEventListener('click', function () {
             var st = workspace.getState();
-            var name = window.prompt('Rename file', st.activeFile);
-            if (!name || name === st.activeFile) return;
+            var prev = st.activeFile;
+            var name = window.prompt('Rename file', prev);
+            if (!name || name === prev) return;
             flushEditorToWorkspace();
-            var res = workspace.renameFile(st.activeFile, name);
+            var res = workspace.renameFile(prev, name);
             if (!res.ok) {
                 window.alert(res.error);
                 return;
@@ -653,6 +729,7 @@
             loadActiveIntoEditor();
             renderFiles();
             renderTabs();
+            announce('Renamed ' + prev + ' to ' + name);
         });
         $('#btn-upload-file').addEventListener('click', function () {
             openUploadPicker();
@@ -693,8 +770,9 @@
         });
         $('#btn-delete-file').addEventListener('click', function () {
             var st = workspace.getState();
-            if (!window.confirm('Delete ' + st.activeFile + '?')) return;
-            var res = workspace.deleteFile(st.activeFile);
+            var doomed = st.activeFile;
+            if (!window.confirm('Delete ' + doomed + '?')) return;
+            var res = workspace.deleteFile(doomed);
             if (!res.ok) {
                 window.alert(res.error);
                 return;
@@ -702,6 +780,7 @@
             loadActiveIntoEditor();
             renderFiles();
             renderTabs();
+            announce('Deleted ' + doomed + ', editing ' + workspace.getState().activeFile);
         });
 
         var ta = $('#source-fallback');
@@ -743,10 +822,10 @@
                     enterInputMode(msg && msg.prompt);
                 } else if (status === 'timeout') {
                     exitInputMode();
-                    setStatus('error', 'Timed out');
+                    setStatus('error', 'Timed out', 'Execution timed out');
                 } else if (status === 'worker_error') {
                     exitInputMode();
-                    setStatus('error', 'Runtime error');
+                    setStatus('error', 'Runtime error', 'Runtime error');
                 }
             }
         });
@@ -773,15 +852,17 @@
 
         bindButtons();
         bindShellInput();
+        bindTablistKeys();
         loadShellHistory();
         setShellPrompt('$');
+        setShellInputLabel('Shell command');
 
         clearShell();
         appendShell('PythonShell — work is saved only in this browser (localStorage).', 'line-out');
         appendShell("Type 'help' for commands, or press Run.", 'line-out');
 
         setBusy(true);
-        setStatus('loading', 'Loading…');
+        setStatus('loading', 'Loading…', 'Loading Python');
 
         Promise.all([workspace.load(), runtime.init()])
             .then(function () {
@@ -789,9 +870,8 @@
                 loadActiveIntoEditor();
                 renderFiles();
                 renderTabs();
-                setStatus('ready', 'Ready');
+                setStatus('ready', 'Ready', 'Python ready');
                 setBusy(false);
-                announce('Python ready');
             })
             .catch(function (err) {
                 initEditor();
