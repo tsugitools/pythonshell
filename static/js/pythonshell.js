@@ -264,7 +264,7 @@
         setShellInputLabel('Shell command');
         var shellInput = $('#shell-input');
         if (shellInput) {
-            shellInput.placeholder = 'help, ls, rm, python main.py';
+            shellInput.placeholder = '';
         }
     }
 
@@ -1021,6 +1021,106 @@
         }
     }
 
+    function shellSplitStorageKey() {
+        return (cfg.storageKey || 'pythonshell-workspace-v1') + '-shell-height';
+    }
+
+    function bindShellSplit() {
+        var handle = $('#shell-split');
+        var workspaceEl = $('.workspace');
+        var bottom = $('.bottom-row');
+        if (!handle || !workspaceEl || !bottom) return;
+
+        var MIN_SHELL = 120;
+        var MIN_EDITOR = 100;
+        var DEFAULT_RATIO = 0.32;
+
+        function usableHeight() {
+            return Math.max(0, workspaceEl.clientHeight - handle.offsetHeight);
+        }
+
+        function setShellHeightPx(px, persist) {
+            var total = usableHeight();
+            if (total < MIN_SHELL + MIN_EDITOR) return;
+            px = Math.max(MIN_SHELL, Math.min(total - MIN_EDITOR, px));
+            var ratio = px / total;
+            bottom.style.height = px + 'px';
+            handle.setAttribute('aria-valuenow', String(Math.round(ratio * 100)));
+            if (persist !== false) {
+                try {
+                    localStorage.setItem(shellSplitStorageKey(), String(ratio));
+                } catch (e) { /* quota */ }
+            }
+            if (editor) editor.resize();
+        }
+
+        function applyStoredOrDefault() {
+            var ratio = DEFAULT_RATIO;
+            try {
+                var raw = localStorage.getItem(shellSplitStorageKey());
+                if (raw != null) {
+                    var n = parseFloat(raw);
+                    if (!isNaN(n) && n > 0.1 && n < 0.9) ratio = n;
+                }
+            } catch (e) { /* ignore */ }
+            setShellHeightPx(usableHeight() * ratio, false);
+        }
+
+        applyStoredOrDefault();
+
+        var dragging = false;
+        function onPointerDown(ev) {
+            if (ev.button != null && ev.button !== 0) return;
+            dragging = true;
+            document.body.classList.add('is-splitting');
+            try { handle.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
+            ev.preventDefault();
+        }
+        function onPointerMove(ev) {
+            if (!dragging) return;
+            var rect = workspaceEl.getBoundingClientRect();
+            var shellPx = rect.bottom - ev.clientY - handle.offsetHeight / 2;
+            setShellHeightPx(shellPx);
+        }
+        function onPointerUp(ev) {
+            if (!dragging) return;
+            dragging = false;
+            document.body.classList.remove('is-splitting');
+            try { handle.releasePointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
+        }
+
+        handle.addEventListener('pointerdown', onPointerDown);
+        handle.addEventListener('pointermove', onPointerMove);
+        handle.addEventListener('pointerup', onPointerUp);
+        handle.addEventListener('pointercancel', onPointerUp);
+
+        handle.addEventListener('keydown', function (ev) {
+            var step = ev.shiftKey ? 48 : 16;
+            if (ev.key === 'ArrowUp') {
+                ev.preventDefault();
+                setShellHeightPx(bottom.offsetHeight + step);
+            } else if (ev.key === 'ArrowDown') {
+                ev.preventDefault();
+                setShellHeightPx(bottom.offsetHeight - step);
+            } else if (ev.key === 'Home') {
+                ev.preventDefault();
+                setShellHeightPx(usableHeight() * 0.2);
+            } else if (ev.key === 'End') {
+                ev.preventDefault();
+                setShellHeightPx(usableHeight() * 0.6);
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            // Keep the same ratio when the window changes size.
+            var total = usableHeight();
+            if (!total) return;
+            var ratio = bottom.offsetHeight / total;
+            if (!(ratio > 0.1 && ratio < 0.9)) ratio = DEFAULT_RATIO;
+            setShellHeightPx(total * ratio, false);
+        });
+    }
+
     function boot() {
         initA11yPreview();
 
@@ -1085,6 +1185,7 @@
         bindButtons();
         bindShellInput();
         bindTablistKeys();
+        bindShellSplit();
         loadShellHistory();
         setShellPrompt('$');
         setShellInputLabel('Shell command');

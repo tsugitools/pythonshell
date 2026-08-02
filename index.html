@@ -55,47 +55,61 @@
         <ul id="file-list" class="file-list"></ul>
       </aside>
 
-      <section class="editor-panel" aria-label="Editor">
-        <h2 class="sr-only">Editor</h2>
-        <div id="tabs" class="tabs" role="tablist" aria-label="Open files"></div>
-        <div id="editor-wrap" class="editor-wrap">
-          <label class="sr-only" for="source-fallback">Code editor</label>
-          <p id="editor-a11y-hint" class="sr-only">
-            Press Escape to leave the code editor and move to the shell.
-          </p>
-          <textarea
-            id="source-fallback"
-            spellcheck="false"
-            aria-describedby="editor-a11y-hint"
-          ></textarea>
-        </div>
-      </section>
-
-      <div class="bottom-row">
-        <section class="shell-panel" aria-label="Linux-like shell">
-          <div class="panel-head">
-            <h2 class="panel-title">Linux-like shell</h2>
-          </div>
-          <div
-            id="shell-output"
-            class="shell-output"
-            role="log"
-            aria-live="off"
-            aria-label="Shell output"
-          ></div>
-          <div class="shell-input-row">
-            <span id="shell-prompt" class="shell-prompt" aria-hidden="true">$</span>
-            <label class="sr-only" for="shell-input" id="shell-input-label">Shell command</label>
-            <input
-              id="shell-input"
-              type="text"
-              autocomplete="off"
+      <div class="workspace">
+        <section class="editor-panel" aria-label="Editor">
+          <h2 class="sr-only">Editor</h2>
+          <div id="tabs" class="tabs" role="tablist" aria-label="Open files"></div>
+          <div id="editor-wrap" class="editor-wrap">
+            <label class="sr-only" for="source-fallback">Code editor</label>
+            <p id="editor-a11y-hint" class="sr-only">
+              Press Escape to leave the code editor and move to the shell.
+            </p>
+            <textarea
+              id="source-fallback"
               spellcheck="false"
-              aria-label="Shell command"
-              placeholder="help, ls, rm, python main.py — ↑ history"
-            >
+              aria-describedby="editor-a11y-hint"
+            ></textarea>
           </div>
         </section>
+
+        <div
+          id="shell-split"
+          class="split-handle"
+          role="separator"
+          aria-orientation="horizontal"
+          aria-label="Resize editor and shell"
+          aria-valuemin="15"
+          aria-valuemax="75"
+          aria-valuenow="32"
+          tabindex="0"
+        ></div>
+
+        <div class="bottom-row">
+          <section class="shell-panel" aria-label="Linux-like shell">
+            <div class="panel-head">
+              <h2 class="panel-title">Linux-like shell</h2>
+            </div>
+            <div
+              id="shell-output"
+              class="shell-output"
+              role="log"
+              aria-live="off"
+              aria-label="Shell output"
+            ></div>
+            <div class="shell-input-row">
+              <span id="shell-prompt" class="shell-prompt" aria-hidden="true">$</span>
+              <label class="sr-only" for="shell-input" id="shell-input-label">Shell command</label>
+              <input
+                id="shell-input"
+                type="text"
+                autocomplete="off"
+                spellcheck="false"
+                aria-label="Shell command"
+                placeholder=""
+              >
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   </div>
