@@ -1,7 +1,7 @@
 {
   "name": "pythonshell-desktop",
   "productName": "PythonShell",
-  "version": "1.0.0",
+  "version": "0.9.0",
   "description": "PythonShell desktop playground — in-app Python with Pyodide, workspace in localStorage.",
   "author": "Python for Everybody",
   "license": "Apache-2.0",

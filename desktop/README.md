@@ -37,4 +37,4 @@ Output is written to `desktop/dist/`.
 
 Unsigned builds: on macOS, right-click the app and choose Open the first time. Windows SmartScreen may warn until the binaries are signed.
 
-Tagged releases (`v1.0.0`, …) are built for Mac, Windows, and Linux by `.github/workflows/release.yml`.
+Tagged releases (`v0.9.0`, …) are built for Mac, Windows, and Linux by `.github/workflows/release.yml`.
