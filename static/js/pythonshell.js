@@ -342,12 +342,29 @@
         workspace.flushPersist();
     }
 
-    function downloadWorkspaceFile(name) {
-        flushEditorToWorkspace();
-        if (!name || workspace.getFile(name) == null) {
-            return { ok: false, error: 'File not found: ' + name };
-        }
-        var content = workspace.getFile(name);
+    function isElectronApp() {
+        // Desktop wrapper only: it already shows a native Save dialog for <a download>.
+        // Do not key off the Electron user-agent — Chromium embeds (and this
+        // in-page browser) also include it, and they need the overwrite picker.
+        return location.protocol === 'pythonshell:';
+    }
+
+    function pickerTypesFor(name) {
+        var ext = '';
+        var dot = String(name || '').lastIndexOf('.');
+        if (dot > 0) ext = String(name).slice(dot).toLowerCase();
+        if (!ext || ext === '.') return null;
+        var mime = 'text/plain';
+        if (ext === '.json') mime = 'application/json';
+        else if (ext === '.html' || ext === '.htm') mime = 'text/html';
+        else if (ext === '.css') mime = 'text/css';
+        else if (ext === '.js' || ext === '.mjs') mime = 'text/javascript';
+        var accept = {};
+        accept[mime] = [ext];
+        return [{ description: ext.slice(1).toUpperCase() + ' file', accept: accept }];
+    }
+
+    function downloadWithAnchor(name, content) {
         var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
@@ -362,6 +379,44 @@
         }, 1000);
         announce('Downloaded ' + name);
         return { ok: true };
+    }
+
+    function downloadWithSavePicker(name, content) {
+        var opts = { suggestedName: name };
+        var types = pickerTypesFor(name);
+        if (types) opts.types = types;
+        return window.showSaveFilePicker(opts).then(function (handle) {
+            return handle.createWritable().then(function (writable) {
+                return writable.write(content).then(function () {
+                    return writable.close();
+                });
+            });
+        }).then(function () {
+            announce('Downloaded ' + name);
+            return { ok: true };
+        });
+    }
+
+    function downloadWorkspaceFile(name) {
+        flushEditorToWorkspace();
+        if (!name || workspace.getFile(name) == null) {
+            return Promise.resolve({ ok: false, error: 'File not found: ' + name });
+        }
+        var content = workspace.getFile(name);
+        // Electron already shows a native Save dialog for <a download>.
+        // In Chrome/Edge, that path silently uniquifies to "file (2).py".
+        if (typeof window.showSaveFilePicker === 'function' && !isElectronApp()) {
+            return downloadWithSavePicker(name, content).catch(function (err) {
+                if (err && err.name === 'AbortError') {
+                    return { ok: false, cancelled: true, error: 'Cancelled' };
+                }
+                if (err && (err.name === 'SecurityError' || err.name === 'NotAllowedError')) {
+                    return downloadWithAnchor(name, content);
+                }
+                return { ok: false, error: (err && err.message) || 'Could not save file' };
+            });
+        }
+        return Promise.resolve(downloadWithAnchor(name, content));
     }
 
     function basenameFromUpload(path) {
@@ -839,7 +894,12 @@
         var result = shell.exec(line);
         if (result.async && result.promise) {
             // runEntry owns busy/status; do not setBusy here or python sees "Already running".
-            return result.promise.catch(function (err) {
+            return result.promise.then(function (value) {
+                if (value && typeof value.ok === 'boolean' && value.output) {
+                    appendShell(value.output, value.ok ? 'line-out' : 'line-err');
+                    if (value.ok) announceOutputBlock(value.output);
+                }
+            }).catch(function (err) {
                 if (err && err.message === 'Already running') {
                     appendShell(err.message, 'line-err');
                 }
@@ -993,8 +1053,9 @@
         }
         $('#btn-download-file').addEventListener('click', function () {
             var st = workspace.getState();
-            var res = downloadWorkspaceFile(st.activeFile);
-            if (!res.ok) window.alert(res.error);
+            downloadWorkspaceFile(st.activeFile).then(function (res) {
+                if (!res.ok && !res.cancelled) window.alert(res.error);
+            });
         });
         $('#btn-delete-file').addEventListener('click', function () {
             var st = workspace.getState();
@@ -1177,6 +1238,7 @@
                 openUploadPicker();
                 return { ok: true };
             },
+            pythonVersion: cfg.pythonVersion || '3.12.7',
             runPython: function (entry) {
                 return runEntry(entry);
             }

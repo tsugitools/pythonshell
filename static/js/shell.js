@@ -27,6 +27,7 @@
         var onMutate = typeof options.onMutate === 'function' ? options.onMutate : function () {};
         var onDownload = typeof options.onDownload === 'function' ? options.onDownload : null;
         var onUpload = typeof options.onUpload === 'function' ? options.onUpload : null;
+        var pythonVersion = options.pythonVersion || '3.12.7';
 
         function helpText() {
             return [
@@ -144,14 +145,30 @@
             if (!onDownload) {
                 return { ok: false, output: 'shell: download: not available' };
             }
-            var res = onDownload(path);
-            if (!res || !res.ok) {
+            function finishDownload(res) {
+                if (res && res.cancelled) {
+                    return { ok: true, output: '' };
+                }
+                if (!res || !res.ok) {
+                    return {
+                        ok: false,
+                        output: 'shell: download: ' + ((res && res.error) || 'failed')
+                    };
+                }
+                return { ok: true, output: 'Downloaded ' + path };
+            }
+            // Start immediately so the save picker keeps the keypress user gesture.
+            var started = onDownload(path);
+            if (started && typeof started.then === 'function') {
                 return {
-                    ok: false,
-                    output: 'shell: download: ' + ((res && res.error) || 'failed')
+                    ok: true,
+                    async: true,
+                    run: function () {
+                        return Promise.resolve(started).then(finishDownload);
+                    }
                 };
             }
-            return { ok: true, output: 'Downloaded ' + path };
+            return finishDownload(started);
         }
 
         function cmdEcho(args) {
@@ -163,13 +180,21 @@
             return { ok: true, output: '', cleared: true };
         }
 
+        function isVersionFlag(arg) {
+            return arg === '--version' || arg === '-V';
+        }
+
         function cmdPython(args) {
+            if (args[0] && isVersionFlag(args[0])) {
+                return { ok: true, output: 'Python ' + pythonVersion };
+            }
             if (!args[0]) {
                 return {
                     ok: false,
                     output:
                         'shell: python: missing file\n' +
                         'Usage: python <file.py>\n' +
+                        '       python --version\n' +
                         '(Interactive REPL is not supported; run a file.)'
                 };
             }

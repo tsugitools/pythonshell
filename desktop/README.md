@@ -35,6 +35,22 @@ npm run dist:linux  # Linux AppImage
 
 Output is written to `desktop/dist/`.
 
-Unsigned builds: on macOS, right-click the app and choose Open the first time. Windows SmartScreen may warn until the binaries are signed.
-
 Tagged releases (`v0.9.0`, …) are built for Mac, Windows, and Linux by `.github/workflows/release.yml`.
+
+## macOS Gatekeeper (Sequoia and Tahoe)
+
+The Mac `.dmg` is **not signed or notarized**. On Tahoe, Gatekeeper shows “PythonShell Not Opened” (Apple could not verify it) and often **moves the app to the Trash**.
+
+1. Drag `PythonShell.app` out of Trash into `/Applications`.
+2. Clear the download quarantine and open it:
+
+```bash
+xattr -cr /Applications/PythonShell.app
+open /Applications/PythonShell.app
+```
+
+Alternatively: System Settings → Privacy & Security → **Open Anyway**.
+
+Right-click → Open does **not** work on Sequoia/Tahoe. The lasting fix is an Apple Developer ID and notarization.
+
+Windows SmartScreen may warn on the unsigned `.exe`.

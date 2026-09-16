@@ -32,6 +32,17 @@ npm start
 
 See [desktop/README.md](desktop/README.md) for packaging installers. The playground is unchanged: workspace stays in `localStorage`, not on the real disk. First launch needs internet for Pyodide.
 
+Installers for tagged releases: [github.com/tsugitools/pythonshell/releases](https://github.com/tsugitools/pythonshell/releases).
+
+**macOS (Sequoia and Tahoe):** the `.dmg` is not Apple-notarized. Gatekeeper will refuse to open it and often **moves PythonShell to the Trash**. Drag it back to Applications, then:
+
+```bash
+xattr -cr /Applications/PythonShell.app
+open /Applications/PythonShell.app
+```
+
+Or System Settings → Privacy & Security → **Open Anyway**. Right-click → Open does not work on Tahoe. Windows SmartScreen may warn on the `.exe` for the same reason (unsigned).
+
 ## Learner flow
 
 1. Open the page — no login required.
@@ -51,6 +62,7 @@ See [desktop/README.md](desktop/README.md) for packaging installers. The playgro
 | `upload` | Open a file picker to upload into the workspace |
 | `download <file>` | Download a file to your computer |
 | `pwd` / `cd` | Working directory (flat workspace root) |
+| `python --version` / `python -V` | Show the Pyodide Python version |
 | `python <file.py>` | Run a file |
 | `echo` / `clear` | Niceties |
 
