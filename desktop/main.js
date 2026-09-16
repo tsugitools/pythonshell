@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, protocol, session, shell } = require('electron');
+const { app, BrowserWindow, Menu, dialog, protocol, session, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
 
@@ -148,12 +148,86 @@ function createWindow() {
     win.loadURL(ORIGIN + '/index.html');
 }
 
+const PY4E_URL = 'https://www.py4e.com/';
+const ABOUT_DETAIL =
+    'Provided free of charge by Python for Everybody (www.py4e.com)';
+
+function showAbout(win) {
+    const opts = {
+        type: 'info',
+        title: 'About PythonShell',
+        message: 'PythonShell',
+        detail: ABOUT_DETAIL + '\n\nVersion ' + app.getVersion(),
+        buttons: ['Visit www.py4e.com', 'OK'],
+        defaultId: 1,
+        cancelId: 1,
+        noLink: true
+    };
+    const shown = win ? dialog.showMessageBox(win, opts) : dialog.showMessageBox(opts);
+    shown.then(function (result) {
+        if (result.response === 0) {
+            shell.openExternal(PY4E_URL);
+        }
+    });
+}
+
+function createMenu() {
+    const isMac = process.platform === 'darwin';
+    const aboutItem = {
+        label: 'About PythonShell',
+        click: function (_item, win) {
+            showAbout(win);
+        }
+    };
+    const template = [];
+    if (isMac) {
+        template.push({
+            label: app.name,
+            submenu: [
+                aboutItem,
+                { type: 'separator' },
+                { role: 'hide' },
+                { role: 'hideOthers' },
+                { role: 'unhide' },
+                { type: 'separator' },
+                { role: 'quit' }
+            ]
+        });
+    }
+    template.push(
+        { role: 'fileMenu' },
+        { role: 'editMenu' },
+        { role: 'viewMenu' },
+        { role: 'windowMenu' },
+        {
+            role: 'help',
+            submenu: [
+                {
+                    label: 'Python for Everybody (www.py4e.com)',
+                    click: function () {
+                        shell.openExternal(PY4E_URL);
+                    }
+                }
+            ].concat(isMac ? [] : [ { type: 'separator' }, aboutItem ])
+        }
+    );
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
 app.whenReady().then(function () {
     registerProtocol();
 
     session.defaultSession.setPermissionRequestHandler(function (_wc, _permission, callback) {
         callback(false);
     });
+
+    app.setAboutPanelOptions({
+        applicationName: 'PythonShell',
+        applicationVersion: app.getVersion(),
+        copyright: ABOUT_DETAIL,
+        website: PY4E_URL
+    });
+    createMenu();
 
     createWindow();
 

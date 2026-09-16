@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/css/pythonshell.css">
+  <link rel="stylesheet" href="static/css/pythonshell.css?v=1">
 </head>
 <body>
   <div id="a11y-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
@@ -24,6 +24,7 @@
         <button type="button" class="primary" id="btn-run">Run</button>
         <button type="button" id="btn-restart">Restart runtime</button>
         <button type="button" class="danger" id="btn-reset">Reset workspace</button>
+        <button type="button" id="btn-about">About</button>
         <span id="runtime-status" class="status">Starting…</span>
       </div>
     </header>
@@ -114,6 +115,17 @@
     </div>
   </div>
 
+  <dialog id="about-dialog" aria-labelledby="about-title">
+    <h2 id="about-title">PythonShell</h2>
+    <p>
+      Provided free of charge by
+      <a href="https://www.py4e.com/" target="_blank" rel="noopener noreferrer">Python for Everybody (www.py4e.com)</a>.
+    </p>
+    <form method="dialog">
+      <button type="submit">OK</button>
+    </form>
+  </dialog>
+
   <script>
     window.PYTHONSHELL = {
       pyodideVersion: '0.27.5',
@@ -129,6 +141,6 @@
   <script src="static/js/runtime.js"></script>
   <script src="static/js/workspace.js"></script>
   <script src="static/js/shell.js?v=2"></script>
-  <script src="static/js/pythonshell.js?v=1"></script>
+  <script src="static/js/pythonshell.js?v=3"></script>
 </body>
 </html>

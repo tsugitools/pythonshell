@@ -954,6 +954,23 @@
     }
 
     function bindButtons() {
+        var aboutBtn = $('#btn-about');
+        if (aboutBtn) {
+            if (isElectronApp()) {
+                aboutBtn.hidden = true;
+            } else {
+                aboutBtn.addEventListener('click', function () {
+                    var dlg = $('#about-dialog');
+                    if (dlg && typeof dlg.showModal === 'function') {
+                        dlg.showModal();
+                        return;
+                    }
+                    window.alert(
+                        'PythonShell\n\nProvided free of charge by Python for Everybody (www.py4e.com)'
+                    );
+                });
+            }
+        }
         $('#btn-run').addEventListener('click', onRunClick);
         $('#btn-restart').addEventListener('click', function () {
             exitInputMode();
