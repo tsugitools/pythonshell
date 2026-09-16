@@ -1,7 +1,7 @@
 {
   "name": "pythonshell-desktop",
   "productName": "PythonShell",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "PythonShell desktop playground — in-app Python with Pyodide, workspace in localStorage.",
   "author": "Python for Everybody",
   "license": "Apache-2.0",
@@ -12,7 +12,7 @@
     "pack": "electron-builder --dir --publish never",
     "dist": "electron-builder --publish never",
     "dist:mac": "electron-builder --mac --publish never",
-    "dist:win": "electron-builder --win --publish never",
+    "dist:win": "electron-builder --win nsis appx --publish never",
     "dist:linux": "electron-builder --linux --publish never"
   },
   "devDependencies": {
@@ -67,6 +67,12 @@
           "arch": [
             "x64"
           ]
+        },
+        {
+          "target": "appx",
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
@@ -85,6 +91,17 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
+    },
+    "appx": {
+      "identityName": "PythonforEverybody.PythonShell",
+      "applicationId": "PythonShell",
+      "publisherDisplayName": "Python for Everybody",
+      "displayName": "PythonShell",
+      "backgroundColor": "#0b6e4f",
+      "showNameOnTiles": true,
+      "languages": [
+        "en-US"
+      ]
     }
   }
 }

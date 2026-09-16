@@ -41,7 +41,7 @@ xattr -cr /Applications/PythonShell.app
 open /Applications/PythonShell.app
 ```
 
-Or System Settings → Privacy & Security → **Open Anyway**. Right-click → Open does not work on Tahoe. Windows SmartScreen may warn on the `.exe` for the same reason (unsigned).
+Or System Settings → Privacy & Security → **Open Anyway**. Right-click → Open does not work on Tahoe. Windows SmartScreen may warn on the unsigned `.exe`. Tagged Windows releases also include an unsigned `.msix` (sideload in Developer Mode; the NSIS installer is the usual path).
 
 ## Learner flow
 

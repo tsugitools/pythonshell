@@ -42,12 +42,19 @@ jobs:
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
 
+      # electron-builder's appx target writes .appx; the formats are the same.
+      - name: Rename AppX to MSIX
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Get-ChildItem dist -Filter *.appx | Rename-Item -NewName { $_.BaseName + '.msix' }
+
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             desktop/dist/*.dmg
             desktop/dist/*.exe
+            desktop/dist/*.msix
             desktop/dist/*.AppImage
             desktop/dist/*.zip
         env:

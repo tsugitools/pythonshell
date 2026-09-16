@@ -29,13 +29,13 @@ From `desktop/`:
 ```bash
 npm run dist        # current OS
 npm run dist:mac    # macOS .dmg (universal)
-npm run dist:win    # Windows NSIS .exe
+npm run dist:win    # Windows NSIS .exe and AppX/MSIX
 npm run dist:linux  # Linux AppImage
 ```
 
 Output is written to `desktop/dist/`.
 
-Tagged releases (`v0.9.0`, …) are built for Mac, Windows, and Linux by `.github/workflows/release.yml`.
+Tagged releases (`v0.9.1`, …) are built for Mac, Windows, and Linux by `.github/workflows/release.yml`.
 
 ## macOS Gatekeeper (Sequoia and Tahoe)
 
@@ -53,4 +53,10 @@ Alternatively: System Settings → Privacy & Security → **Open Anyway**.
 
 Right-click → Open does **not** work on Sequoia/Tahoe. The lasting fix is an Apple Developer ID and notarization.
 
-Windows SmartScreen may warn on the unsigned `.exe`.
+Windows SmartScreen may warn on the unsigned `.exe`. The tagged Windows build also includes an unsigned `.msix` (same package as AppX). Sideload it in Developer Mode:
+
+```powershell
+Add-AppxPackage .\PythonShell-0.9.1-win-x64.msix
+```
+
+Without a signing certificate, MSIX will not install on a stock Windows machine the way the NSIS `.exe` does. The Store would re-sign it if this app is ever submitted there.
