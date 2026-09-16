@@ -20,6 +20,18 @@ python3 -m http.server 8765
 
 Or place the folder under your course / Tsugi `mod/` tree and open its URL.
 
+## Desktop app
+
+A downloadable Electron wrapper (Mac, Windows, Linux) lives in [`desktop/`](desktop/). It serves the same static files over `pythonshell://app/` so Web Workers and `localStorage` work without a random localhost port.
+
+```bash
+cd desktop
+npm install
+npm start
+```
+
+See [desktop/README.md](desktop/README.md) for packaging installers. The playground is unchanged: workspace stays in `localStorage`, not on the real disk. First launch needs internet for Pyodide.
+
 ## Learner flow
 
 1. Open the page — no login required.
