@@ -3,3 +3,5 @@
 desktop/node_modules/
 desktop/dist/
 desktop/out/
+desktop/build/*.p12
+desktop/build/*.provisionprofile

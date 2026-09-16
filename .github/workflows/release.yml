@@ -59,3 +59,41 @@ jobs:
             desktop/dist/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  mas:
+    name: Mac App Store
+    runs-on: macos-latest
+    if: ${{ secrets.MAC_CSC_LINK != '' }}
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Provisioning profile
+        if: ${{ secrets.MAC_PROVISION_PROFILE_BASE64 != '' }}
+        run: echo "${{ secrets.MAC_PROVISION_PROFILE_BASE64 }}" | base64 --decode > build/embedded.provisionprofile
+
+      - name: Build Mac App Store package
+        run: npm run dist:mas
+        env:
+          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+          CSC_INSTALLER_LINK: ${{ secrets.MAC_CSC_INSTALLER_LINK }}
+          CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.MAC_CSC_INSTALLER_KEY_PASSWORD }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mas-pkg
+          path: |
+            desktop/dist/*.pkg
+            desktop/dist/mas/*.pkg

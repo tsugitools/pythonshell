@@ -122,6 +122,26 @@ Copyright © Python for Everybody
 - SKU (you choose, once): pythonshell-mac
 - Price: Free
 
+## Upload your builds using one of several tools
+
+App Store Connect shows this until a **Mac App Store** binary is attached. Do **not** upload the GitHub `.dmg`.
+
+You need a signed `.pkg` from electron-builder’s `mas` target. From `desktop/`, with Mac App Store certificates in the keychain (or `CSC_LINK` / `CSC_INSTALLER_LINK`):
+
+```bash
+npm run dist:mas
+```
+
+That writes a universal `.pkg` under `desktop/dist/` (name like `PythonShell-0.9.3-mas-universal.pkg`). Then use one of:
+
+1. **Transporter** (Mac App Store) — sign in as the Apple Developer account, drag the `.pkg`, Deliver.
+2. **Xcode** → Window → Organizer → Distribute App.
+3. Terminal: `xcrun iTMSTransporter` (or `xcrun altool --upload-app -t osx -f PythonShell.pkg`).
+
+Tagged GitHub releases still only attach the unsigned `.dmg`. The Store `.pkg` is a separate `dist:mas` build. Put the provisioning profile at `desktop/build/embedded.provisionprofile` (not committed).
+
+CI will also run `dist:mas` on tags if repository secrets `MAC_CSC_LINK` and `MAC_CSC_KEY_PASSWORD` are set, and attach the `.pkg` as a workflow artifact (not the public GitHub release).
+
 ## Packaging (not listing text, but you will hit this)
 
 The GitHub `.dmg` is **not** a Mac App Store build. Store submission needs:
