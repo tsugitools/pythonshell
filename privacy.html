@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy — PythonShell</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #eef2f5;
+      --panel: #ffffff;
+      --text: #1a2332;
+      --muted: #5a6b7d;
+      --accent: #0b6e4f;
+      --border: #c9d3de;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+      line-height: 1.5;
+      background:
+        radial-gradient(ellipse 80% 50% at 10% -10%, rgba(11, 110, 79, 0.12), transparent 55%),
+        var(--bg);
+    }
+    main {
+      max-width: 40rem;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+    }
+    h1 {
+      margin: 0 0 0.25rem;
+      font-size: 1.6rem;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+    }
+    .meta {
+      margin: 0 0 1.5rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    h2 {
+      margin: 1.5rem 0 0.4rem;
+      font-size: 1.1rem;
+    }
+    p { margin: 0 0 0.9rem; }
+    a { color: var(--accent); }
+    nav { margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <nav><a href="index.html">PythonShell</a></nav>
+    <h1>Privacy</h1>
+    <p class="meta">PythonShell · Python for Everybody · Last updated 16 September 2026</p>
+
+    <p>
+      PythonShell is provided free of charge by
+      <a href="https://www.py4e.com/">Python for Everybody</a>.
+      This policy covers the website playground and the desktop apps (Mac, Windows, Linux).
+    </p>
+
+    <h2>What we do not collect</h2>
+    <p>
+      We do not require an account. We do not collect names, email addresses, or your coding work
+      on our servers. There are no ads and no third-party analytics in the app.
+    </p>
+
+    <h2>Where your work lives</h2>
+    <p>
+      Python runs on your computer (in the browser or in the desktop app). Your editor workspace
+      is stored only on this device (browser or app localStorage). Clearing site data, uninstalling
+      the app, or using Reset workspace permanently deletes that local copy. We never receive those files.
+    </p>
+
+    <h2>Network</h2>
+    <p>
+      On first launch the app downloads a pinned Python runtime (Pyodide) from a public
+      content-delivery network so the interpreter can run. Later launches can use the cached
+      runtime. We do not use that download to track you.
+    </p>
+    <p>
+      If you choose Upload or Download, files are read from or saved to locations you pick.
+      Those files stay on your computer unless you put them somewhere else yourself.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Questions: <a href="https://www.py4e.com/">www.py4e.com</a>
+    </p>
+  </main>
+</body>
+</html>
