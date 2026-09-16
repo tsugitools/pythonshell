@@ -1,7 +1,7 @@
 {
   "name": "pythonshell-desktop",
   "productName": "PythonShell",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "PythonShell desktop playground — in-app Python with Pyodide, workspace in localStorage.",
   "author": "Python for Everybody",
   "license": "Apache-2.0",
@@ -95,10 +95,12 @@
     "appx": {
       "identityName": "PythonforEverybody.PythonShell",
       "applicationId": "PythonShell",
-      "publisherDisplayName": "Python for Everybody",
+      "publisherDisplayName": "Dr. Chuck",
       "displayName": "PythonShell",
       "backgroundColor": "#0b6e4f",
       "showNameOnTiles": true,
+      "minVersion": "10.0.17763.0",
+      "maxVersionTested": "10.0.26100.0",
       "languages": [
         "en-US"
       ]
