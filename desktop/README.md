@@ -35,7 +35,7 @@ npm run dist:linux  # Linux AppImage
 
 Output is written to `desktop/dist/`.
 
-Tagged releases (`v0.9.2`, …) are built for Mac, Windows, and Linux by `.github/workflows/release.yml`.
+Tagged releases (`v0.9.3`, …) are built for Mac, Windows, and Linux by `.github/workflows/release.yml`.
 
 ## macOS Gatekeeper (Sequoia and Tahoe)
 
@@ -56,7 +56,7 @@ Right-click → Open does **not** work on Sequoia/Tahoe. The lasting fix is an A
 Windows SmartScreen may warn on the unsigned `.exe`. The tagged Windows build also includes an unsigned `.msix` (same package as AppX). Sideload it in Developer Mode:
 
 ```powershell
-Add-AppxPackage .\PythonShell-0.9.2-win-x64.msix
+Add-AppxPackage .\PythonShell-0.9.3-win-x64.msix
 ```
 
 Without a signing certificate, MSIX will not install on a stock Windows machine the way the NSIS `.exe` does. The Store would re-sign it if this app is ever submitted there.
