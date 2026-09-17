@@ -46,6 +46,7 @@ const MIME = {
     '.svg': 'image/svg+xml',
     '.txt': 'text/plain; charset=utf-8',
     '.wasm': 'application/wasm',
+    '.zip': 'application/zip',
     '.woff': 'font/woff',
     '.woff2': 'font/woff2'
 };
@@ -55,6 +56,13 @@ function getWebRoot() {
         return path.join(process.resourcesPath, 'web');
     }
     return path.join(__dirname, '..');
+}
+
+function getPyodideRoot() {
+    if (app.isPackaged) {
+        return path.join(process.resourcesPath, 'web', 'pyodide');
+    }
+    return path.join(__dirname, 'node_modules', 'pyodide');
 }
 
 function mimeFor(filePath) {
@@ -75,8 +83,13 @@ function resolveWebFile(requestUrl) {
     if (rel.endsWith('/')) rel += 'index.html';
     rel = rel.replace(/^\/+/, '');
 
-    const root = path.resolve(getWebRoot());
-    const full = path.resolve(root, rel);
+    let root = path.resolve(getWebRoot());
+    if (rel === 'pyodide' || rel.startsWith('pyodide/')) {
+        root = path.resolve(getPyodideRoot());
+        rel = rel === 'pyodide' ? '' : rel.slice('pyodide/'.length);
+    }
+
+    const full = path.resolve(root, rel || '.');
     const relative = path.relative(root, full);
     if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
         return null;

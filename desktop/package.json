@@ -1,7 +1,7 @@
 {
   "name": "pythonshell-desktop",
   "productName": "PythonShell",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "PythonShell desktop playground — in-app Python with Pyodide, workspace in localStorage.",
   "author": "Python for Everybody",
   "license": "Apache-2.0",
@@ -10,7 +10,7 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir --publish never",
-    "dist": "electron-builder --publish never",
+    "dist": "node scripts/dist.js",
     "dist:mac": "electron-builder --mac --publish never",
     "dist:mas": "test -f build/embedded.provisionprofile || { echo 'Missing build/embedded.provisionprofile. Download a Mac App Store profile from https://developer.apple.com/account/resources/profiles/list and save it there.'; exit 1; }; electron-builder --mac mas --universal --publish never",
     "dist:mas:dev": "electron-builder --mac mas-dev --universal --publish never",
@@ -19,7 +19,8 @@
   },
   "devDependencies": {
     "electron": "^37.10.3",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "pyodide": "0.27.5"
   },
   "build": {
     "appId": "com.learnxp.pythonshell",
@@ -43,6 +44,17 @@
       {
         "from": "../static",
         "to": "web/static"
+      },
+      {
+        "from": "node_modules/pyodide",
+        "to": "web/pyodide",
+        "filter": [
+          "pyodide.js",
+          "pyodide.asm.js",
+          "pyodide.asm.wasm",
+          "python_stdlib.zip",
+          "pyodide-lock.json"
+        ]
       }
     ],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",

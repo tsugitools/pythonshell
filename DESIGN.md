@@ -150,6 +150,7 @@ The editor workspace is the source of truth for files. One JSON object is stored
   "schema": "pythonshell-workspace",
   "version": 1,
   "files": {
+    "hello.py": "print(\"hello py4e\")\n",
     "main.py": "print('Hello from PythonShell')\n"
   },
   "activeFile": "main.py",

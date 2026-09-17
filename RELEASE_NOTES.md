@@ -4,7 +4,9 @@ Short copy for app-store “What’s new” fields. Newest first.
 
 ## Unreleased
 
-About now credits Python for Everybody (www.py4e.com). On the website use the About button; in the desktop app use Help → About PythonShell.
+## v0.9.4
+
+The Mac and Windows desktop apps include the pinned Pyodide 0.27.5 runtime, so Python starts without a network connection. The website still loads Pyodide from the CDN on first visit.
 
 ## v0.9.3
 

@@ -8,6 +8,7 @@
 
     var SCHEMA = 'pythonshell-workspace';
     var VERSION = 1;
+    var DEFAULT_HELLO = 'print("hello py4e")\n';
     var DEFAULT_MAIN =
         "# Welcome to PythonShell — edit, Run, or type: python main.py\n" +
         "name = input('What is your name? ')\n" +
@@ -18,13 +19,20 @@
         { name: 'mbox-short.txt', url: 'static/files/mbox-short.txt' }
     ];
 
+    function defaultPythonFiles() {
+        return {
+            'hello.py': DEFAULT_HELLO,
+            'main.py': DEFAULT_MAIN
+        };
+    }
+
     function emptyDefaultWorkspace() {
         return {
             schema: SCHEMA,
             version: VERSION,
-            files: { 'main.py': DEFAULT_MAIN },
-            activeFile: 'main.py',
-            openTabs: ['main.py'],
+            files: defaultPythonFiles(),
+            activeFile: 'hello.py',
+            openTabs: ['hello.py', 'main.py'],
             cwd: '.',
             stdin: '',
             updatedAt: new Date().toISOString()
@@ -77,7 +85,7 @@
 
         function buildDefaultWorkspace() {
             return fetchSeedFiles().then(function (seeds) {
-                var files = { 'main.py': DEFAULT_MAIN };
+                var files = defaultPythonFiles();
                 for (var i = 0; i < seeds.length; i++) {
                     files[seeds[i].name] = seeds[i].text;
                 }
@@ -85,8 +93,8 @@
                     schema: SCHEMA,
                     version: VERSION,
                     files: files,
-                    activeFile: 'main.py',
-                    openTabs: ['main.py'],
+                    activeFile: 'hello.py',
+                    openTabs: ['hello.py', 'main.py'],
                     cwd: '.',
                     stdin: '',
                     updatedAt: new Date().toISOString()

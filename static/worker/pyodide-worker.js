@@ -14,7 +14,7 @@
 
 var PROTOCOL_VERSION = 1;
 var PYODIDE_VERSION = '0.27.5';
-var PYODIDE_INDEX = 'https://cdn.jsdelivr.net/pyodide/v' + PYODIDE_VERSION + '/full/';
+var PYODIDE_CDN = 'https://cdn.jsdelivr.net/pyodide/v' + PYODIDE_VERSION + '/full/';
 var WORK_DIR = '/home/pyodide/work';
 var MAX_OUTPUT_CHARS = 100000;
 var RESERVED_NAMES = { 'result.py': true };
@@ -53,6 +53,17 @@ function workerUrl(relativePath) {
     }
 }
 
+function pyodideIndexURL() {
+    try {
+        if (self.location && self.location.protocol === 'pythonshell:') {
+            return new URL('../../pyodide/', self.location.href).href;
+        }
+    } catch (e) {
+        /* packaged path failed; use the CDN */
+    }
+    return PYODIDE_CDN;
+}
+
 async function fetchText(url) {
     var res = await fetch(url);
     if (!res.ok) {
@@ -71,9 +82,9 @@ async function loadPyodideRuntime() {
     reply(null, 'init', 'loading', {
         message: 'Loading Pyodide ' + PYODIDE_VERSION + '…'
     });
-    importScripts(PYODIDE_INDEX + 'pyodide.js');
+    importScripts(pyodideIndexURL() + 'pyodide.js');
     pyodide = await loadPyodide({
-        indexURL: PYODIDE_INDEX
+        indexURL: pyodideIndexURL()
     });
     await ensureResultSource();
     return pyodide;

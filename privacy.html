@@ -78,9 +78,13 @@
 
     <h2>Network</h2>
     <p>
-      On first launch the app downloads a pinned Python runtime (Pyodide) from a public
-      content-delivery network so the interpreter can run. Later launches can use the cached
-      runtime. We do not use that download to track you.
+      The website downloads a pinned Python runtime (Pyodide) from a public
+      content-delivery network on first use so the interpreter can run. Later
+      visits can use the cached runtime. The Mac and Windows desktop apps include
+      that same pinned runtime in the application package, so they do not need
+      the network to start Python. Help in the desktop app may open
+      <a href="https://www.py4e.com/">www.py4e.com</a> in a browser. We do not
+      use network access to track you.
     </p>
     <p>
       If you choose Upload or Download, files are read from or saved to locations you pick.

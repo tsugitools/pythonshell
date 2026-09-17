@@ -16,9 +16,7 @@ PythonShell is a simple Python playground from Python for Everybody. Open it and
 
 Write Python in a multi-file editor, press Run, and see the result in a small Linux-like shell. The same shell understands commands such as `python main.py`, `ls`, `rm`, `help`, `upload`, and `download`. When a program calls `input()`, type the answer at the shell prompt.
 
-Python 3.12 runs locally in the app (Pyodide). Your code is not sent to a server to be executed. Work is saved only on this device (localStorage in the app). Clearing app data, resetting the workspace, or using another PC will lose it — that is intentional. This is a place to experiment, not an assignment drop-box.
-
-First launch needs an internet connection so the Python runtime can download. Later launches reuse the cached runtime.
+Python 3.12 runs locally in the app (Pyodide). The runtime is included in the app. Your code is not sent to a server to be executed. Work is saved only on this device (localStorage in the app). Clearing app data, resetting the workspace, or using another PC will lose it — that is intentional. This is a place to experiment, not an assignment drop-box.
 
 The web version is at https://shell.py4e.com/
 
@@ -29,7 +27,7 @@ What you can do
 • See print output, errors, and tracebacks
 • Answer `input()` prompts in the shell
 • Stop a runaway program (the runtime times out and restarts)
-• Reset the workspace to the starter files (`main.py`, `about.txt`, `romeo.txt`, `mbox-short.txt`)
+• Reset the workspace to the starter files (`hello.py`, `main.py`, `about.txt`, `romeo.txt`, `mbox-short.txt`)
 
 What it is not
 
@@ -68,13 +66,13 @@ python, python playground, learn python, py4e, python for everybody, coding, edi
 
 ## Screenshot caption
 
-`screenshot_01.png` — Edit `main.py`, press Run, and answer `input()` in the Linux-like shell.
+`screenshot_01.png` — Edit `hello.py`, press Run, and see `hello py4e` in the Linux-like shell.
 
 ## Notes for certification testers
 
-1. First launch needs internet so the Python runtime can download from the public Pyodide CDN (jsDelivr). After that, the runtime is cached.
+1. The Python runtime is bundled in the app. Internet is not required to press Run. Help may open www.py4e.com in a browser.
 2. The window should show an editor, a file list (`main.py`, `about.txt`, …), and a shell with a `$` prompt.
-3. Press **Run** (or type `python main.py`). When asked `What is your name?`, type a name and press Enter. The shell should print `Hello` plus that name.
+3. `hello.py` is focused. Press **Run** (or type `python hello.py`). The shell should print `hello py4e`. Open `main.py`, press **Run**, and when asked `What is your name?`, type a name and press Enter. The shell should print `Hello` plus that name.
 4. There is no sign-in. Work is stored only in the app (localStorage), not as files in Documents.
 5. **Reset workspace** restores the starter files and discards edits.
 
@@ -89,6 +87,6 @@ PythonShell is a Win32 Electron (Chromium) desktop app packaged as MSIX, not a s
 ## System notes (do not paste unless asked)
 
 - Windows 10 version 1809 or later (MinVersion 10.0.17763.0)
-- Internet required on first launch
+- Python runtime is included in the app
 - Category: Education
 - Publisher display name: Dr. Chuck

@@ -30,24 +30,35 @@ npm install
 npm start
 ```
 
-See [desktop/README.md](desktop/README.md) for packaging installers. The playground is unchanged: workspace stays in `localStorage`, not on the real disk. First launch needs internet for Pyodide.
+To build installers for the OS you are on:
 
-Installers for tagged releases: [github.com/tsugitools/pythonshell/releases](https://github.com/tsugitools/pythonshell/releases).
+```bash
+cd desktop
+npm run dist        # current OS; on this Mac also the App Store .pkg if the profile is present
+```
 
-**macOS (Sequoia and Tahoe):** the `.dmg` is not Apple-notarized. Gatekeeper will refuse to open it and often **moves PythonShell to the Trash**. Drag it back to Applications, then:
+Output is `desktop/dist/`. Other targets (`dist:mac`, `dist:win`, `dist:linux`, Mac App Store `dist:mas`) are in [desktop/README.md](desktop/README.md). The playground is unchanged: workspace stays in `localStorage`, not on the real disk. The desktop app bundles Pyodide, so Python starts offline; the website still needs internet on first visit.
+
+**Install locally on a Mac** (the unsigned `.dmg`, not the App Store `.pkg`):
+
+1. `open dist/PythonShell-*-mac-universal.dmg`.
+2. Drag `PythonShell.app` into `/Applications`.
+3. Clear Gatekeeper quarantine and launch (Sequoia/Tahoe will otherwise refuse it and often **move the app to the Trash**):
 
 ```bash
 xattr -cr /Applications/PythonShell.app
 open /Applications/PythonShell.app
 ```
 
-Or System Settings → Privacy & Security → **Open Anyway**. Right-click → Open does not work on Tahoe. Windows SmartScreen may warn on the unsigned `.exe`. Tagged Windows releases also include an unsigned `.msix` (sideload in Developer Mode; the NSIS installer is the usual path).
+Or System Settings → Privacy & Security → **Open Anyway**. Right-click → Open does not work on Tahoe.
+
+Installers for tagged releases: [github.com/tsugitools/pythonshell/releases](https://github.com/tsugitools/pythonshell/releases). Windows SmartScreen may warn on the unsigned `.exe`. Tagged Windows releases also include an unsigned `.msix` (sideload in Developer Mode; the NSIS installer is the usual path).
 
 ## Learner flow
 
 1. Open the page — no login required.
-2. Edit `main.py` or create more files (+ / rename / delete).
-3. Press **Run**, or type `python main.py` in the shell.
+2. Edit `hello.py` or create more files (+ / rename / delete).
+3. Press **Run**, or type `python hello.py` in the shell.
 4. When `input()` runs, answer in the shell (the `$` prompt becomes the Python prompt).
 5. Use `ls`, `rm`, `help`, etc.
 6. Reload the page; the workspace restores from localStorage.
@@ -72,7 +83,7 @@ Pipes, redirects, globs, and a Python REPL are not supported.
 
 - Workspace key: `pythonshell-workspace-v1` (see `window.PYTHONSHELL.storageKey`).
 - Clearing site data, using another browser, or private mode can lose work.
-- **Reset workspace** clears localStorage for this tool and restores defaults: `main.py`, `about.txt`, `romeo.txt`, and `mbox-short.txt` (from `static/files/`).
+- **Reset workspace** clears localStorage for this tool and restores defaults: `hello.py`, `main.py`, `about.txt`, `romeo.txt`, and `mbox-short.txt` (from `static/files/`).
 
 ## Caching
 
@@ -82,7 +93,7 @@ Pipes, redirects, globs, and a Python REPL are not supported.
 
 ## Runtime
 
-- Pyodide **0.27.5** (CDN on first load; then browser-cached).
+- Pyodide **0.27.5** (website: CDN on first load, then browser-cached; desktop app: bundled).
 - Always runs in a Web Worker; infinite loops time out and the worker is replaced.
 - Ace editor (vendored under `static/js/vendor/ace/`).
 

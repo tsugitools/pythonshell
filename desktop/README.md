@@ -2,7 +2,7 @@
 
 Thin Electron window around the static PythonShell playground. The website is unchanged: this app serves the same `index.html` and `static/` files over a stable `pythonshell://app/` origin so Web Workers work and `localStorage` persists across launches.
 
-The workspace is **not** stored as real disk files. Upload/download still use the in-page file picker, same as [shell.py4e.com](https://shell.py4e.com/). First launch needs internet so Pyodide can load from jsDelivr; later launches reuse Chromium’s cache.
+The workspace is **not** stored as real disk files. Upload/download still use the in-page file picker, same as [shell.py4e.com](https://shell.py4e.com/). The desktop app ships a pinned Pyodide 0.27.5 runtime, so Python starts offline. Help can still open [www.py4e.com](https://www.py4e.com/) in a browser.
 
 Interactive `input()` needs Chromium JSPI (WebAssembly stack switching). The app enables that at launch (`WebAssemblyExperimentalJSPI`) and uses Electron 37+ (Chromium 138), where JSPI is on by default.
 
@@ -27,9 +27,9 @@ Electron keeps its own profile, so the desktop workspace is separate from Chrome
 From `desktop/`:
 
 ```bash
-npm run dist        # current OS
+npm run dist        # current OS; on a Mac with embedded.provisionprofile also builds the Store .pkg
 npm run dist:mac    # macOS .dmg (universal) — GitHub releases, unsigned
-npm run dist:mas    # Mac App Store .pkg (universal, sandboxed; needs Apple certs)
+npm run dist:mas    # Mac App Store .pkg only (universal, sandboxed; needs Apple certs + profile)
 npm run dist:win    # Windows NSIS .exe and AppX/MSIX
 npm run dist:linux  # Linux AppImage
 ```
@@ -112,7 +112,7 @@ cd desktop
 npm run dist:mas
 ```
 
-The signing line must show a profile path, not `provisioningProfile=none`. The Transporter upload is `desktop/dist/mas-universal/PythonShell-0.9.3-mac-universal.pkg` (not the `.app`, not the GitHub `.dmg`). Open **Transporter** from the Mac App Store, sign in as the same Apple ID that owns the App Store Connect app, drag that `.pkg`, Deliver.
+The signing line must show a profile path, not `provisioningProfile=none`. The Transporter upload is `desktop/dist/mas-universal/PythonShell-0.9.4-mac-universal.pkg` (not the `.app`, not the GitHub `.dmg`). Open **Transporter** from the Mac App Store, sign in as the same Apple ID that owns the App Store Connect app, drag that `.pkg`, Deliver.
 
 For CI `.p12` exports: in **Keychain Access**, select the Mac App Distribution identity → Export → `.p12`. Set a password. Repeat for the Installer identity.
 
@@ -136,14 +136,14 @@ Until `MAC_CSC_LINK` is set, the Mac App Store job on a `v*` tag is skipped. Aft
 
 Do not commit `.p12` or `.provisionprofile` files.
 
-`npm run dist:mas:dev` is the same sandbox with a development cert, for local testing. Listing and review notes: [`store/apple/listing.md`](store/apple/listing.md).
+`npm run dist:mas:dev` is the same sandbox with a development cert, for local testing. Paste-ready App Store Connect fields (and which Connect screens still need the old jsDelivr/first-launch wording removed): [`store/apple/listing.md`](store/apple/listing.md). Microsoft Partner Center copy: [`store/microsoft/listing.md`](store/microsoft/listing.md).
 
 ## Windows SmartScreen
 
 Windows SmartScreen may warn on the unsigned `.exe`. The tagged Windows build also includes an unsigned `.msix` (same package as AppX). Sideload it in Developer Mode:
 
 ```powershell
-Add-AppxPackage .\PythonShell-0.9.3-win-x64.msix
+Add-AppxPackage .\PythonShell-0.9.4-win-x64.msix
 ```
 
 Without a signing certificate, MSIX will not install on a stock Windows machine the way the NSIS `.exe` does. The Store would re-sign it if this app is ever submitted there.
