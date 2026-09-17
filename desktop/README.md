@@ -56,7 +56,9 @@ Right-click → Open does **not** work on Sequoia/Tahoe. The lasting fix is an A
 
 ## Mac App Store
 
-`npm run dist:mas` builds a sandboxed universal `.pkg` for App Store Connect (`com.py4e.pythonshell`). It is **not** part of the default GitHub tag build (that stays an unsigned `.dmg`).
+`npm run dist:mas` builds a sandboxed universal `.pkg` for App Store Connect (`com.learnxp.pythonshell`). It is **not** part of the default GitHub tag build (that stays an unsigned `.dmg`).
+
+The App Store Connect **Mac** app record must use that same bundle ID. Transporter matches the `.pkg` to the listing by bundle ID only. Creating certs in the browser is not enough: both identities must be in Keychain, and the provisioning profile must be a file at `desktop/build/embedded.provisionprofile`.
 
 ### Apple certificates
 
@@ -69,18 +71,50 @@ Apple will ask you to **Upload a Certificate Signing Request**. Make that file o
 3. User Email Address: your Apple ID email. Common Name: something like `Dr. Chuck`. CA Email Address: leave empty. Choose **Saved to disk**. Continue, save `CertificateSigningRequest.certSigningRequest` (Desktop is fine).
 4. Back in the Apple Developer form, upload that `.certSigningRequest`.
 
-Then:
+Then create **two** certificates, uploading the same CSR for each. Download each `.cer` and double-click so it installs in the **login** keychain (not System Roots):
 
-1. Create **Mac App Distribution** (`3rd Party Mac Developer Application`) and **Mac Installer Distribution** (`3rd Party Mac Developer Installer`), uploading the same CSR for each. Download the `.cer` files and double-click to install them in Keychain.
-2. Also create an **App Store provisioning profile** for bundle ID `com.py4e.pythonshell`. Save it as `desktop/build/embedded.provisionprofile` for a local build (that path is gitignored).
-3. In **Keychain Access**, select the Mac App Distribution identity → Export → `.p12`. Set a password. Repeat for the Installer identity if it is a separate cert.
+1. **Mac App Distribution** — shows in Keychain as `3rd Party Mac Developer Application`. Signs `PythonShell.app`.
+2. **Mac Installer Distribution** — shows as `3rd Party Mac Developer Installer`. Signs the `.pkg`. Without this, the build stops after signing the app: `Cannot find valid "3rd Party Mac Developer Installer" identity`.
 
-Local build (certs already in the keychain):
+Confirm both (two lines: one Application, one Installer). Do **not** create a second Mac App Distribution certificate — `codesign` then fails with **ambiguous**. If that happens, in Keychain Access delete only the extra *certificate* (not the private key). `security delete-identity` can remove the shared CSR key and break both certs.
+
+```bash
+security find-identity -v -p basic | grep '3rd Party Mac Developer'
+```
+
+### Provisioning profile
+
+[Profiles](https://developer.apple.com/account/resources/profiles/list) → **+**. Under **Distribution**, pick **Mac App Store Connect**.
+
+Do **not** pick:
+
+- **macOS App Development** — local test Macs only
+- **App Store Connect** — iPhone/iPad
+- **Developer ID** — notarized `.dmg` outside the Store
+
+Then: App ID `com.learnxp.pythonshell` → Mac App Distribution certificate → Generate → **Download**.
+
+Save the file into the repo (Apple’s download name does not matter). Do not only create it on the website, and do not double-click it “to install”:
+
+```bash
+mkdir -p desktop/build
+cp ~/Downloads/*.provisionprofile desktop/build/embedded.provisionprofile
+```
+
+That path is gitignored. `npm run dist:mas` refuses to run if the file is missing. Transporter rejects a `.pkg` without it (errors 90889 / 90287: missing profile, `com.apple.application-identifier` / `com.apple.developer.team-identifier`).
+
+### Local MAS build
+
+Certs in Keychain, profile at `desktop/build/embedded.provisionprofile`:
 
 ```bash
 cd desktop
 npm run dist:mas
 ```
+
+The signing line must show a profile path, not `provisioningProfile=none`. The Transporter upload is `desktop/dist/mas-universal/PythonShell-0.9.3-mac-universal.pkg` (not the `.app`, not the GitHub `.dmg`). Open **Transporter** from the Mac App Store, sign in as the same Apple ID that owns the App Store Connect app, drag that `.pkg`, Deliver.
+
+For CI `.p12` exports: in **Keychain Access**, select the Mac App Distribution identity → Export → `.p12`. Set a password. Repeat for the Installer identity.
 
 For CI, encode the files and add **repository secrets** (Settings → Secrets and variables → Actions):
 

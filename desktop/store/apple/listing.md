@@ -118,7 +118,7 @@ Copyright © Python for Everybody
 
 ## Bundle / identity (already in the desktop app)
 
-- Bundle ID: com.py4e.pythonshell
+- Bundle ID: com.learnxp.pythonshell
 - SKU (you choose, once): pythonshell-mac
 - Price: Free
 
@@ -138,7 +138,7 @@ That writes a universal `.pkg` under `desktop/dist/` (name like `PythonShell-0.9
 2. **Xcode** → Window → Organizer → Distribute App.
 3. Terminal: `xcrun iTMSTransporter` (or `xcrun altool --upload-app -t osx -f PythonShell.pkg`).
 
-Tagged GitHub releases still only attach the unsigned `.dmg`. The Store `.pkg` is a separate `dist:mas` build. Put the provisioning profile at `desktop/build/embedded.provisionprofile` (not committed).
+Tagged GitHub releases still only attach the unsigned `.dmg`. The Store `.pkg` is a separate `dist:mas` build. Put a **Mac App Store Connect** provisioning profile at `desktop/build/embedded.provisionprofile` (not committed). See [`README.md`](../../README.md).
 
 CI will also run `dist:mas` on tags if repository secrets `MAC_CSC_LINK` and `MAC_CSC_KEY_PASSWORD` are set, and attach the `.pkg` as a workflow artifact (not the public GitHub release).
 

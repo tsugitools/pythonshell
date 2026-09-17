@@ -12,7 +12,7 @@
     "pack": "electron-builder --dir --publish never",
     "dist": "electron-builder --publish never",
     "dist:mac": "electron-builder --mac --publish never",
-    "dist:mas": "electron-builder --mac mas --universal --publish never",
+    "dist:mas": "test -f build/embedded.provisionprofile || { echo 'Missing build/embedded.provisionprofile. Download a Mac App Store profile from https://developer.apple.com/account/resources/profiles/list and save it there.'; exit 1; }; electron-builder --mac mas --universal --publish never",
     "dist:mas:dev": "electron-builder --mac mas-dev --universal --publish never",
     "dist:win": "electron-builder --win nsis appx --publish never",
     "dist:linux": "electron-builder --linux --publish never"
@@ -22,7 +22,7 @@
     "electron-builder": "^26.0.12"
   },
   "build": {
-    "appId": "com.py4e.pythonshell",
+    "appId": "com.learnxp.pythonshell",
     "productName": "PythonShell",
     "copyright": "Copyright © Python for Everybody",
     "asar": true,
@@ -66,6 +66,7 @@
       "entitlements": "build/entitlements.mas.plist",
       "entitlementsInherit": "build/entitlements.mas.inherit.plist",
       "entitlementsLoginHelper": "build/entitlements.mas.loginhelper.plist",
+      "provisioningProfile": "build/embedded.provisionprofile",
       "category": "public.app-category.education",
       "type": "distribution"
     },
@@ -73,7 +74,8 @@
       "hardenedRuntime": false,
       "entitlements": "build/entitlements.mas.plist",
       "entitlementsInherit": "build/entitlements.mas.inherit.plist",
-      "entitlementsLoginHelper": "build/entitlements.mas.loginhelper.plist"
+      "entitlementsLoginHelper": "build/entitlements.mas.loginhelper.plist",
+      "provisioningProfile": "build/embedded.provisionprofile"
     },
     "win": {
       "icon": "icons/icon.ico",
