@@ -3,7 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b6e4f">
   <title>PythonShell - A Python Playground</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="static/icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="static/icons/icon-192.png" type="image/png" sizes="192x192">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
@@ -25,6 +29,7 @@
         <button type="button" id="btn-restart">Restart runtime</button>
         <button type="button" class="danger" id="btn-reset">Reset workspace</button>
         <button type="button" id="btn-about">About</button>
+        <button type="button" id="btn-install" hidden>Install app</button>
         <span id="runtime-status" class="status">Starting…</span>
       </div>
     </header>
@@ -144,6 +149,6 @@
   <script src="static/js/runtime.js"></script>
   <script src="static/js/workspace.js"></script>
   <script src="static/js/shell.js?v=2"></script>
-  <script src="static/js/pythonshell.js?v=3"></script>
+  <script src="static/js/pythonshell.js?v=4"></script>
 </body>
 </html>

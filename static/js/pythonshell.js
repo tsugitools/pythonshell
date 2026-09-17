@@ -953,6 +953,35 @@
         });
     }
 
+    function bindPwaInstall() {
+        var btn = $('#btn-install');
+        if (!btn || isElectronApp()) return;
+        try {
+            if (window.matchMedia('(display-mode: standalone)').matches) return;
+        } catch (e) {
+            /* matchMedia optional */
+        }
+
+        var deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', function (ev) {
+            ev.preventDefault();
+            deferredPrompt = ev;
+            btn.hidden = false;
+        });
+        btn.addEventListener('click', function () {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            Promise.resolve(deferredPrompt.userChoice).then(function () {
+                deferredPrompt = null;
+                btn.hidden = true;
+            });
+        });
+        window.addEventListener('appinstalled', function () {
+            deferredPrompt = null;
+            btn.hidden = true;
+        });
+    }
+
     function bindButtons() {
         var aboutBtn = $('#btn-about');
         if (aboutBtn) {
@@ -971,6 +1000,7 @@
                 });
             }
         }
+        bindPwaInstall();
         $('#btn-run').addEventListener('click', onRunClick);
         $('#btn-restart').addEventListener('click', function () {
             exitInputMode();
