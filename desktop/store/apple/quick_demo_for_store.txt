@@ -1,0 +1,15 @@
+ Hello, and welcome to a quick screen recording for Python Shell.
+ This is very simple, so demonstrating it is quite easy.
+ It is a completely standalone, there's no network, there's no login,
+ there's no in-app purchases, no nothing.
+ It is just a simple text editor and Python runner.
+ It includes a Python runtime in the distribution using Pyode and WASM.
+ And so I can run it, and it compiles it and runs it.
+ Really cool. A little test flight. Run it again.
+ You can download a file to your computer, and you can upload a file from your computer.
+ Replace it. I didn't change it.
+ So there you go. It's got some built-in test files.
+ These can be deleted. It's all using local storage.
+ Now, on the desktop, it's using kind of emulated, simulated local storage.
+ So it has no external capabilities, does not use a network, and is exceedingly simple.
+ OK? Cheers.
