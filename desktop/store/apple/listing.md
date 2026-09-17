@@ -112,21 +112,37 @@ The live page is [`privacy.html`](../../../privacy.html) at the site root.
 
 ## Notes for App Review (App Store Connect → App Review Information)
 
-Paste this (also use in Resolution Center if Guideline 2.1 asks for more information on a new developer account):
+Paste the block below into **both** (1) the Resolution Center reply for Guideline 2.1 and (2) **App Review Information → Notes**. The Notes field is ≤4000 characters; this text is well under that.
 
-PythonShell is a free education app from Python for Everybody (www.py4e.com). There is no login, no user accounts, no in-app purchase, no subscriptions, and no user-generated public content.
+PythonShell is a free Mac education app from Python for Everybody (https://www.py4e.com/). There is no login, no user accounts, no in-app purchase, no subscriptions, and no user-generated public content.
 
-PURPOSE AND AUDIENCE. PythonShell is a beginner Python playground for learners in Python for Everybody and similar intro courses. The problem it solves: students can write and run Python immediately on a Mac without installing a local Python, creating an account, or joining an LMS. Value: a multi-file editor, Run, and a small Linux-like shell; Python 3.12 runs on the device (Pyodide). It is not a grader and not a full IDE.
+1. SCREEN RECORDING. Captured on a physical Mac running the latest macOS, starting with launch and showing the typical flow: https://www.youtube.com/watch?v=f8pSutXWE_c
 
-HOW TO TEST. No credentials. (1) Launch PythonShell. The Python runtime (Pyodide 0.27.5 / Python 3.12 as WebAssembly) is included in the app. Wait until the shell is ready. Learner programs are not sent to a server. Users cannot install extra packages. (2) hello.py is focused at launch (print("hello py4e")). Press Run (or type python hello.py). The shell should print hello py4e. (3) Open main.py. Press Run. When asked for a name, type one and press Enter. The shell should print Hello plus that name. (4) Optional: ls, help, upload/download via the in-app file picker. (5) Help → About PythonShell credits Python for Everybody. Demo account: none.
+The video launches PythonShell, waits until the shell is ready, runs hello.py (prints hello py4e), then runs main.py and answers the input() prompt. Help → About is shown.
 
-EXTERNAL SERVICES. Python runs on the device from a runtime included in the app (Pyodide 0.27.5). It is not an AI API. Help may open https://www.py4e.com/ in the system browser. No authentication provider, no payments, no analytics SDK, no backend that runs student code. The editor (Ace) and UI ship inside the app. Workspace stays in the app’s local storage.
+Account registration / login / deletion: not in the app and not in the recording. There is no account system.
 
-REGIONS. The app functions the same in all regions. There are no geo-restricted features or localized catalogs.
+User-generated content, reporting, and blocking: not applicable. Files stay on this Mac; nothing is posted to other users.
 
-REGULATED / THIRD-PARTY CONTENT. Not a regulated industry. Sample files (hello.py, main.py, about.txt, romeo.txt, mbox-short.txt) are course materials we provide. We have the rights to ship this app and those files. Romeo text is a public-domain excerpt used for teaching.
+Paid content: not applicable. The app is free; there are no in-app purchases or subscriptions.
 
-Screen recording: launch on a physical Mac, wait for Pyodide, Run hello.py (prints hello py4e), then Run main.py and answer input(), Help → About. No login, no UGC, no paid features.
+2. PURPOSE AND AUDIENCE. Target audience: beginners in Python for Everybody and similar intro Python courses. Problem: students often cannot run Python until they install a local interpreter, create an account, or join a learning-management system. Value: open the app, edit files, press Run, and see output in a small Linux-like shell. Python 3.12 runs on the Mac inside the app (Pyodide). It is a playground, not a grader, not a full IDE, and not connected to an LMS.
+
+3. SETUP AND ACCESS. No credentials and no extra sample files. Starter files ship in the app.
+
+(1) Launch PythonShell. Wait until the shell prompt is ready. The Python runtime (Pyodide 0.27.5 / Python 3.12 as WebAssembly) is included in the binary. Learner programs are not sent to a server. Users cannot install extra packages.
+(2) hello.py is focused at launch (print("hello py4e")). Press Run, or type python hello.py. The shell prints hello py4e.
+(3) Open main.py. Press Run. When asked for a name, type one and press Enter. The shell prints Hello plus that name.
+(4) Optional: type ls or help. Upload/download uses the in-app file picker.
+(5) Help → About PythonShell credits Python for Everybody.
+
+Demo account: none.
+
+4. EXTERNAL SERVICES. Core functionality (running Python) uses the bundled Pyodide runtime on the device. It is not an AI API and there is no backend that executes student code. Optional: Help may open https://www.py4e.com/ in the system browser (course site). No authentication provider, payment processor, analytics SDK, or third-party data provider. The Ace editor and UI ship inside the app. Workspace files stay in the app’s local storage.
+
+5. REGIONS. The app functions the same in all App Store regions. There are no geo-restricted features, localized catalogs, or region-specific content.
+
+6. REGULATED INDUSTRY / PROTECTED MATERIAL. Not a regulated industry. Sample files (hello.py, main.py, about.txt, romeo.txt, mbox-short.txt) are course materials we provide. We have the rights to ship this app and those files. The Romeo excerpt is public-domain text used for teaching. No medical, financial, government, or licensed third-party media credentials apply.
 
 ## Screenshot caption
 
